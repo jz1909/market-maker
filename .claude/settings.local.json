@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(npm run lint)",
-      "Bash(git -C \"C:\\Users\\jsh27\\CSProj\\market-maker\" diff --stat HEAD~1..HEAD)",
-      "Bash(rm:*)"
-    ]
-  }
-}
