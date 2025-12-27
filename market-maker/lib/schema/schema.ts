@@ -34,7 +34,7 @@ export const users = pgTable('users', {
 
 export const questions = pgTable('questions', {
   id:uuid("id").primaryKey().defaultRandom(),
-  prompt: text("prompt").notNull(),
+  prompt: text("prompt").notNull().unique(),
   answer: numeric("answer").notNull(),
   unit: text("unit"),
   source: text("source"),
