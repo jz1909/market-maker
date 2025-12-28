@@ -25,6 +25,7 @@ export const sideStatusEnum = pgEnum("side_status", ["BUY", "SELL"]);
 
 export const users = pgTable('users', {
   id: uuid("id").primaryKey().defaultRandom(),
+  email: text("email").unique(),
   clerkUserId: text("clerk_user_id").notNull().unique(),
   displayName: text("display_name"),
   createdAt: timestamp("created_at",{withTimezone: true}).notNull().defaultNow(),
