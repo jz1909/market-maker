@@ -41,10 +41,10 @@ export async function POST(req:Request){
     }
 
     if(game.takerUserId) {
-        return NextResponse.json({error:"Gmae is already full"}, {status:400})
+        return NextResponse.json({error:"Game is already full"}, {status:400})
     }
 
-    await db.update(games).set({takerUserId:clerkUserId}).where(eq(games.id, game.id))
+    await db.update(games).set({takerUserId:dbUser.id}).where(eq(games.id, game.id))
 
     return NextResponse.json({gameId:game.id})
 
