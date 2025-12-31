@@ -87,11 +87,10 @@ export default async function Home(){
               {userGames.map((game) => (
                 <li key={game.id} className="w-[40vw] p-4 border-3 border-gray-500 rounded flex justify-between items-center">
                   <span className="font-mono text-sm">{game.joinCode}</span>
-                  <span ml-4 text-sm text-gray-500>{game.gameStatus}</span>
+                  <span className="ml-4 text-sm text-gray-500">{game.gameStatus}</span>
                   <span className="ml-4"> 
                   vs {game.makerUserId === dbUser.id? (game.taker?.displayName ?? "Waiting..."): (game.maker?.displayName ?? "Waiting...")}
                   </span>
-                  {game.makerUserId === dbUser.Id}
                   <a href = {`/game/${game.id}`}>Open</a>
                 </li>
               ))}
