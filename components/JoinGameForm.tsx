@@ -20,7 +20,7 @@ export function JoinGameForm(){
         try{
             const res = await fetch("/api/games/join", 
             {method:"POST", headers: {"Content-Type": "application/json"}, 
-            body:JSON.stringify({joinCode:code.toUpperCase()})})
+            body:JSON.stringify({joinCode:code})})
 
             const data = await res.json();
 
@@ -39,11 +39,11 @@ export function JoinGameForm(){
         }
     }
 
-    return (<div>
+    return (<div className="flex justify-center items-center gap-4">
         <input type="text" value={code} onChange={(e) => setCode(e.target.value)}
          placeholder="Enter Join Code" className="px-3 py-2 border-4 border-gray-400 rounded-lg w-[20vw]" 
          maxLength={6}/>
-        <Button onClick={handleJoin} disabled={loading}>
+        <Button className= "font-bold" onClick={handleJoin} disabled={loading}>
             {loading? "Joining...":"Join"}
         </Button>
          

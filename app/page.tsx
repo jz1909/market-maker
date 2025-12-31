@@ -4,6 +4,8 @@ import { db } from "@/lib/db";
 import { users, games } from "@/lib/schema/schema";
 import { eq, or } from "drizzle-orm";
 import { Button } from "@/components/ui/button";
+import { CreateGameButton } from "@/components/CreateGameButton";
+import { JoinGameForm } from "@/components/JoinGameForm";
 
 export default async function Home(){
   const user = await currentUser()
@@ -24,7 +26,9 @@ export default async function Home(){
   return (
     <div className="min-h-screen p-8">
       <header className = "flex justify-between items-center mb-8">
-        <h1 className = "text-2xl font-bold">Market Maker</h1>
+        <a href="/">
+          <h1 className = "text-2xl font-bold">Market Maker</h1>
+        </a>
         <SignedIn>
           <UserButton />
         </SignedIn>
@@ -61,7 +65,7 @@ export default async function Home(){
           <div className="flex flex-col gap-4 mb-8 p-10">
             <div className="flex flex-col justify-between items-center gap-20 bg-gray-100 p-25 rounded-lg">
               <div className="flex items-center justify-center w-full">
-                <Button className= "font-bold mt-2 w-[60%] h-[3vh] p-5">Create Game</Button>
+                <CreateGameButton/>
               </div>
 
               <div className="text-4xl font-extrabold">
@@ -69,7 +73,7 @@ export default async function Home(){
               </div>
 
               <div className="">
-                <input type = "text" placeholder="Enter join code" className="px-3 py-2 border-4 border-gray-400 rounded-lg w-[20vw]" maxLength={6}/>
+                <JoinGameForm />
               </div>
             </div>
           </div>
@@ -79,7 +83,7 @@ export default async function Home(){
               Your games
             </h2>
             {userGames.length === 0 ? (<p className="text-xl text-gray-500">No games yet. Create or join one to start!</p>)
-            :(<ul className="space-y-2 flex items-center justify-center">
+            :(<ul className="space-y-6 flex flex-col items-center justify-center">
               {userGames.map((game) => (
                 <li key={game.id} className="w-[40vw] p-4 border-3 border-gray-500 rounded flex justify-between items-center">
                   <span className="font-mono text-sm">{game.joinCode}</span>
