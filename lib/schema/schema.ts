@@ -63,30 +63,31 @@ export const rounds = pgTable ('rounds', {
   roundIndex:integer("round_index").notNull(),
   roundStatus:roundStatusEnum("round_status").notNull(),
   questionId:uuid("question_id").notNull(),
+  currentTurnIndex:integer("current_turn_index").notNull().default(0),
   startedAt:timestamp("started_at",{withTimezone:true}),
   endedAt:timestamp("ended_at",{withTimezone: true}),
 })
 
 export const quotes = pgTable('quotes', {
-  roundId:uuid("round_id").primaryKey(),
+  id:uuid("id").primaryKey().defaultRandom(),
+  roundId:uuid("round_id").notNull(),
+  turnIndex:integer("turn_index").notNull(),
   makerUserId:uuid("maker_user_id").notNull(),
   bid:numeric("bid").notNull(),
   ask:numeric("ask").notNull(),
-  updatedAt:timestamp("updated_at", {withTimezone: true}).defaultNow(),
-
+  createdAt:timestamp("created_at", {withTimezone: true}).defaultNow(),
 })
 
 export const trades = pgTable('trades', {
   id:uuid("id").primaryKey().defaultRandom(),
   roundId:uuid("round_id").notNull(),
+  turnIndex:integer("turn_index").notNull(),
   gameId:uuid("game_id").notNull(),
   takerUserId:uuid("taker_user_id").notNull(),
   side:sideStatusEnum("side").notNull(),
   price:numeric("price").notNull(),
   quantity:integer("quantity").notNull(),
   createdAt:timestamp("created_at", {withTimezone:true}),
-
-
 })
 
 // ============================================================================

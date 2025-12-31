@@ -33,14 +33,16 @@ export interface RoundResult{
 
 // settings
 export interface GameConfig{
-    totalRounds:number,
-    roundDurationSeconds:number,
-    defaultQuantity:number;
+    totalRounds: number,
+    turnsPerRound: number,
+    roundDurationSeconds: number,
+    defaultQuantity: number;
 }
 
 // default settings set
 export const DEFAULT_GAME_CONFIG: GameConfig = {
-    totalRounds:5,
-    roundDurationSeconds:40,
-    defaultQuantity:1
+    totalRounds: 3,
+    turnsPerRound: 3,
+    roundDurationSeconds: 40,
+    defaultQuantity: 1,
 }

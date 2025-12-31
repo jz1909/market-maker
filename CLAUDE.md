@@ -63,3 +63,32 @@ Path alias: `@/*` maps to project root.
 Required in `.env.local`:
 - `DATABASE_URL` - Neon PostgreSQL connection string
 - Clerk keys (see Clerk docs)
+
+## Game Rules & Flow
+
+### Game Structure
+- **1 Game = 3 Rounds**
+- **1 Round = 3 Turns**
+- Each round focuses on a single trivia question
+- Roles (Maker/Taker) do NOT switch during the game
+
+### Turn Flow
+Each turn within a round:
+1. **Maker** submits a quote (bid/ask spread)
+2. **Taker** decides to BUY (hit ask), SELL (hit bid), or PASS
+3. Trade is recorded, turn ends
+4. Repeat for 3 turns total per round
+
+### Round Flow
+1. Round starts with a random question displayed to both players
+2. 3 turns are played (maker quotes, taker trades)
+3. After 3 turns, the correct answer is revealed
+4. P&L is calculated for all trades in that round
+5. Move to next round (or end game after round 3)
+
+### Scoring
+- P&L is hidden until the end of each round (after all 3 turns complete)
+- P&L is calculated per trade based on trade price vs correct answer
+- If taker BUYS at price P and answer is A: Taker P&L = (A - P), Maker P&L = (P - A)
+- If taker SELLS at price P and answer is A: Taker P&L = (P - A), Maker P&L = (A - P)
+- Total score = sum of all P&L across all trades in all rounds
