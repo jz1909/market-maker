@@ -7,7 +7,7 @@
 
   function generateJoinCode(): string{
 
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
+    const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
     let code = "";
     for (let i = 0; i<6; i++){
         code+= chars.charAt(Math.floor(Math.random()*chars.length))
