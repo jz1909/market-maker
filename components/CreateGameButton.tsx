@@ -20,7 +20,7 @@
                 return;
             }
 
-            router.push(`/game/${data.gameId}`);
+            router.push(`/game/${data.joinCode}`);
         } catch(error){
             alert("Something went wrong")
         } finally {

@@ -91,7 +91,7 @@ export default async function Home(){
                   <span className="ml-4"> 
                   vs {game.makerUserId === dbUser.id? (game.taker?.displayName ?? "Waiting..."): (game.maker?.displayName ?? "Waiting...")}
                   </span>
-                  <a href = {`/game/${game.id}`}>Open</a>
+                  <a href = {`/game/${game.joinCode}`}>Open</a>
                 </li>
               ))}
             </ul>)}

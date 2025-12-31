@@ -46,7 +46,7 @@ export async function POST(req:Request){
 
     await db.update(games).set({takerUserId:dbUser.id}).where(eq(games.id, game.id))
 
-    return NextResponse.json({gameId:game.id})
+    return NextResponse.json({gameId:game.id, joinCode:game.joinCode})
 
 
 }

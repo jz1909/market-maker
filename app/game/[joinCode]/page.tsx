@@ -5,8 +5,8 @@ import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
 
-export default async function GamePage({params,}:{params: Promise <{gameId:string}>}) {
-    const {gameId} = await params
+export default async function GamePage({params,}:{params: Promise <{joinCode:string}>}) {
+    const {joinCode} = await params
 
     // auth
     const{userId:clerkUserId} = await auth()
@@ -23,9 +23,9 @@ export default async function GamePage({params,}:{params: Promise <{gameId:strin
         redirect("/")
     }
 
-    // Fetch game with maker taker info
+    // Fetch game with maker taker info (joinCode is unique per schema)
     const game = await db.query.games.findFirst({
-        where:eq(games.id, gameId),
+        where:eq(games.joinCode, joinCode),
         with:{maker:true, taker:true}
     })
 
