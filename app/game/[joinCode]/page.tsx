@@ -4,6 +4,7 @@ import { users, games } from "@/lib/schema/schema";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { StartGameButton } from "@/components/StartGameButton";
 
 export default async function GamePage({params,}:{params: Promise <{joinCode:string}>}) {
     const {joinCode} = await params
@@ -86,10 +87,8 @@ export default async function GamePage({params,}:{params: Promise <{joinCode:str
 
                 {/* Start game button, but only appears for maker and when both players are present */}
                 <div>
-                    <Button className={` hover:bg-gray-800 p-7 border-blue-50 border-4 
-                        ${bothPlayerPresent ? "" : "bg-none bg-gray-100 border-gray text-gray-400 hover:bg-gray-100"}`}>
-                        Start Game
-                    </Button>
+                    <StartGameButton disabled={!bothPlayerPresent || isTaker} className={` hover:bg-gray-800 p-7 border-blue-50 border-4 
+                        ${bothPlayerPresent ? "" : "bg-none bg-gray-100 border-gray text-gray-400 hover:bg-gray-100"}`} joinCode = {game.joinCode}/>
                 </div>
 
                 {/* Waiting for taker... */}
