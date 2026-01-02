@@ -22,7 +22,7 @@ export function StartGameButton({joinCode, className, disabled}:{joinCode:string
             }
 
             router.refresh()
-        } catch(error) {
+        } catch {
             alert("Something went wrong")
 
         } finally {

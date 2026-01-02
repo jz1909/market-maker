@@ -21,7 +21,7 @@
             }
 
             router.push(`/game/${data.joinCode}`);
-        } catch(error){
+        } catch {
             alert("Something went wrong")
         } finally {
             setLoading(false)

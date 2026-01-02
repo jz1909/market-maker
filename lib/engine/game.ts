@@ -1,6 +1,6 @@
 import { db } from "@/lib/db";
 import { games, rounds, quotes, trades, questions } from "@/lib/schema/schema";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, sql } from "drizzle-orm";
 import { calculateRoundPnL } from "./scoring";        
 import { DEFAULT_GAME_CONFIG, Trade } from "./types";
 

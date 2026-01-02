@@ -40,6 +40,22 @@ export function calculateRoundPnL(trades: Trade[], correctAnswer:number):{makerP
     return {makerPnL:totalMakerPnL, takerPnL:totalTakerPnL};
 }
 
+export function calculateGameWin(roundResults: {makerPnL: number; takerPnL: number}[]): {makerW: number; takerW: number} {
+    let makerTotalW = 0;
+    let takerTotalW = 0;
+
+    for (const round of roundResults) {
+        if (round.makerPnL > round.takerPnL){
+            makerTotalW += 1
+        } else if (round.takerPnL>round.makerPnL){
+            takerTotalW += 1
+        } 
+        
+    }
+
+    return {makerW: makerTotalW, takerW: takerTotalW};
+}
+
 export function isValidQuote(bid:number, ask:number):boolean{
     return bid<ask&& bid>=0 && ask>=0;
 }

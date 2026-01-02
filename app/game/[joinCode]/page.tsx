@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { users, games } from "@/lib/schema/schema";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
-import { Button } from "@/components/ui/button";
+import Link from "next/link";
 import { StartGameButton } from "@/components/StartGameButton";
 
 export default async function GamePage({params,}:{params: Promise <{joinCode:string}>}) {
@@ -45,9 +45,6 @@ export default async function GamePage({params,}:{params: Promise <{joinCode:str
     }
 
     // derive page vars
-
-    const myRole = isMaker?"MAKER":"TAKER"
-    const opponent = isTaker?game.taker: game.maker
     const bothPlayerPresent = game.makerUserId && game.takerUserId
 
     // render game page based on status aswell
@@ -55,9 +52,9 @@ export default async function GamePage({params,}:{params: Promise <{joinCode:str
     if (game.gameStatus === "LOBBY"){return(
         <div className="min-h-screen p-8">
             <header className="mb-8">
-                <a href="/" className="text-white hover:underline bg-blue-500 rounded-2xl p-3">
+                <Link href="/" className="text-white hover:underline bg-blue-500 rounded-2xl p-3">
                 Back to home
-                </a>
+                </Link>
             </header>
             <main className="w-fill flex flex-col items-center justify-center">
                 <h1 className="text-3xl font-bold mb-8"> Game Lobby </h1>

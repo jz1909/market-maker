@@ -1,4 +1,4 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { currentUser } from "@clerk/nextjs/server";
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { db } from "@/lib/db";
 import { users, games } from "@/lib/schema/schema";
@@ -6,11 +6,18 @@ import { eq, or } from "drizzle-orm";
 import { Button } from "@/components/ui/button";
 import { CreateGameButton } from "@/components/CreateGameButton";
 import { JoinGameForm } from "@/components/JoinGameForm";
+import Link from "next/link";
+
+type DbUser = typeof users.$inferSelect;
+type GameWithRelations = typeof games.$inferSelect & {
+  maker: DbUser | null;
+  taker: DbUser | null;
+};
 
 export default async function Home(){
   const user = await currentUser()
-  let dbUser: any = null
-  let userGames: any[]=[]
+  let dbUser: DbUser | undefined
+  let userGames: GameWithRelations[] = []
   if(user){
       dbUser = await db.query.users.findFirst({
       where: eq(users.clerkUserId, user.id)
@@ -26,9 +33,9 @@ export default async function Home(){
   return (
     <div className="min-h-screen p-8">
       <header className = "flex justify-between items-center mb-8">
-        <a href="/">
+        <Link href="/">
           <h1 className = "text-2xl font-bold">Market Maker</h1>
-        </a>
+        </Link>
         <SignedIn>
           <UserButton />
         </SignedIn>
@@ -89,9 +96,9 @@ export default async function Home(){
                   <span className="font-mono text-sm">{game.joinCode}</span>
                   <span className="ml-4 text-sm text-gray-500">{game.gameStatus}</span>
                   <span className="ml-4"> 
-                  vs {game.makerUserId === dbUser.id? (game.taker?.displayName ?? "Waiting..."): (game.maker?.displayName ?? "Waiting...")}
+                  vs {game.makerUserId === dbUser?.id ? (game.taker?.displayName ?? "Waiting..."): (game.maker?.displayName ?? "Waiting...")}
                   </span>
-                  <a href = {`/game/${game.joinCode}`}>Open</a>
+                  <Link href={`/game/${game.joinCode}`}>Open</Link>
                 </li>
               ))}
             </ul>)}
