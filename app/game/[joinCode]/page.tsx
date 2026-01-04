@@ -5,6 +5,9 @@ import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { StartGameButton } from "@/components/StartGameButton";
+import { QuestionDisplay } from "@/components/game/QuestionDisplay";
+import { Timer } from "@/components/game/Timer";
+import { Scoreboard } from "@/components/game/Scoreboard";
 
 export default async function GamePage({params,}:{params: Promise <{joinCode:string}>}) {
     const {joinCode} = await params
@@ -101,12 +104,9 @@ export default async function GamePage({params,}:{params: Promise <{joinCode:str
     // Active or finished
 
     return (<div>
-                <div>
-                    <h1>
-                        Game Status: {game.gameStatus}
-                    </h1>
-                    <p>Game UI Incomplete</p>
-                </div>
+                <QuestionDisplay prompt= "what was Chinas population in 2024" unit="punds" roundIndex={1}/>
+                <Timer durationSeconds={60} isRunning={false} onTimeUp={null}  />
+                <Scoreboard makerName="Jason" takerName="John" makerWins={3} takerWins={3} currentRole="MAKER"/>
             </div>)
 
 
