@@ -10,6 +10,7 @@ import { Timer } from "@/components/game/Timer";
 import { Scoreboard } from "@/components/game/Scoreboard";
 import { MakerPanel } from "@/components/game/MakerPanel";
 import { TakerPanel } from "@/components/game/TakerPanel";
+import { TradeHistory } from "@/components/game/TradeRecord";
 
 export default async function GamePage({params,}:{params: Promise <{joinCode:string}>}) {
     const {joinCode} = await params
@@ -112,6 +113,18 @@ export default async function GamePage({params,}:{params: Promise <{joinCode:str
                 {/* <MakerPanel joinCode="kkkkkk" roundId="wkdkw" currentTurn={2} isMyTurn={true} onQuoteSubmitted={null}/> */}
                 <TakerPanel joinCode="kk" roundId="wdwdkw" currentTurn={5} currentQuote={{bid:5,ask:3}} isMyTurn={true} onTradeExecuted={null}/>
                 {/* <TakerPanel joinCode="kk" roundId="wdwdkw" currentTurn={5} currentQuote={null} isMyTurn={true} onTradeExecuted={null}/> */}
+
+                <TradeHistory trades={[{
+                        turnIndex: 1,
+                        bid: 98,
+                        ask: 102,
+                        side: "BUY",
+                    }, {
+                        turnIndex: 2,
+                        bid: 100,
+                        ask: 104,
+                        side: null, // PASS
+                    }]} />
 
             </div>)
 
