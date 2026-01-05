@@ -42,7 +42,7 @@ export function Timer ({durationSeconds, isRunning, onTimeUp}:TimerProps){
     const isLow = remainingSeconds < 10
 
 
-    return(<div className={`text-2xl font-mono font-bold ${isLow? "text-red-600": "text-gray-700"}`}>
+    return(<div className={`w-full text-center mb-4 text-2xl font-mono font-bold ${isLow? "text-red-600": "text-gray-700"}`}>
         {formatted}
     </div>)
 

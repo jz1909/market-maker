@@ -4,7 +4,6 @@ import { GameEvent } from "./events";
 
 const gameConnections = new Map<string, Set<ReadableStreamDefaultController>>()
 
-// add client connections to a game room
 export function addClient(joinCode:string, controller:ReadableStreamDefaultController):void{
 
     if (!gameConnections.has(joinCode)){
@@ -17,7 +16,7 @@ export function addClient(joinCode:string, controller:ReadableStreamDefaultContr
 
 
 
-// remove client connection
+
 
 export function removeClient(joinCode:string, controller: ReadableStreamDefaultController):void{
     const clients = gameConnections.get(joinCode)
@@ -33,7 +32,6 @@ export function removeClient(joinCode:string, controller: ReadableStreamDefaultC
 
 }
 
-// broadcast event to all clients
 
 
 export function broadcastToGame(joinCode:string, event:GameEvent):void{

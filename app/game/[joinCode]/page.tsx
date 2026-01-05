@@ -9,6 +9,7 @@ import { QuestionDisplay } from "@/components/game/QuestionDisplay";
 import { Timer } from "@/components/game/Timer";
 import { Scoreboard } from "@/components/game/Scoreboard";
 import { MakerPanel } from "@/components/game/MakerPanel";
+import { TakerPanel } from "@/components/game/TakerPanel";
 
 export default async function GamePage({params,}:{params: Promise <{joinCode:string}>}) {
     const {joinCode} = await params
@@ -108,7 +109,10 @@ export default async function GamePage({params,}:{params: Promise <{joinCode:str
                 <QuestionDisplay prompt= "what was Chinas population in 2024" unit="punds" roundIndex={1}/>
                 <Timer durationSeconds={60} isRunning={false} onTimeUp={null}  />
                 <Scoreboard makerName="Jason" takerName="John" makerWins={3} takerWins={3} currentRole="MAKER"/>
-                <MakerPanel joinCode="kkkkkk" roundId="wkdkw" currentTurn={2} isMyTurn={true} onQuoteSubmitted={null}/>
+                {/* <MakerPanel joinCode="kkkkkk" roundId="wkdkw" currentTurn={2} isMyTurn={true} onQuoteSubmitted={null}/> */}
+                <TakerPanel joinCode="kk" roundId="wdwdkw" currentTurn={5} currentQuote={{bid:5,ask:3}} isMyTurn={true} onTradeExecuted={null}/>
+                {/* <TakerPanel joinCode="kk" roundId="wdwdkw" currentTurn={5} currentQuote={null} isMyTurn={true} onTradeExecuted={null}/> */}
+
             </div>)
 
 
