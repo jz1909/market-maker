@@ -9,7 +9,7 @@ import { createGameEvent, GameStartedData, GameEndedData } from
 "@/lib/realtime/events";
 import { calculateGameWin, calculateRoundPnL } from "@/lib/engine/scoring";
 
-export async function POST(req:Request, {params} : {params: Promise<{joinCode:string, roundId:number}>}) {
+export async function POST(req:Request, {params} : {params: Promise<{joinCode:string, roundId:string}>}) {
 
     const {joinCode, roundId} = await params
 

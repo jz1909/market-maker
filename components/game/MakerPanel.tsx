@@ -31,6 +31,7 @@ export function MakerPanel({joinCode, roundId, currentTurn, isMyTurn, onQuoteSub
 
         if (bidNum >= askNum){
             setError("Bid must be less than ask")
+            return
         }
 
         if(bidNum<0 || askNum <0) {
@@ -41,7 +42,7 @@ export function MakerPanel({joinCode, roundId, currentTurn, isMyTurn, onQuoteSub
         setLoading(true)
 
         try{
-            const res = await fetch(`api/games/${joinCode}/rounds/${roundId}/quote`, {
+            const res = await fetch(`/api/games/${joinCode}/rounds/${roundId}/quote`, {
                 method:"POST", 
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({bid:bidNum, ask:askNum})
@@ -80,7 +81,7 @@ export function MakerPanel({joinCode, roundId, currentTurn, isMyTurn, onQuoteSub
                 </div>
                 <div className="">
                     <label className="text-xl font-bold">Ask (Sell at)</label>
-                    <input type="number" value = {bid} onChange = {(e) => setBid(e.target.value)}
+                    <input type="number" value = {ask} onChange = {(e) => setAsk(e.target.value)}
                     placeholder="0" className=" px-3 ml-3 py-2 border rounded-lg" disabled={!isMyTurn || loading}/>
                 </div>
             </div>

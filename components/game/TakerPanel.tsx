@@ -23,9 +23,9 @@ export function TakerPanel({joinCode, roundId, currentTurn, currentQuote, isMyTu
         setLoading(true)
 
         try{
-            const res = await fetch(`api/games/${joinCode}/rounds/${roundId}/trade`
+            const res = await fetch(`/api/games/${joinCode}/rounds/${roundId}/trade`
                 ,{method:"POST", 
-                headers:{"Content-Type":"applications/json"}, 
+                headers:{"Content-Type":"application/json"}, 
                 body: JSON.stringify({side})}
             )
 
@@ -48,7 +48,7 @@ export function TakerPanel({joinCode, roundId, currentTurn, currentQuote, isMyTu
  
     if(!currentQuote){
         return(
-        <div className="bg-green-50 border-2 border-green-200 rounded lg p-4 m-10 flex flex-col items-center">
+        <div className="bg-green-50 border-2 border-green-200 rounded-lg p-4 m-10 flex flex-col items-center">
             <h3 className="font-semibold text-2xl text-green-900 mb-3">
                 Turn {currentTurn + 1} of 3
             </h3>

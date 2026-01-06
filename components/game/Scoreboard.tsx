@@ -23,7 +23,7 @@ export function Scoreboard({makerName, takerName, makerWins, takerWins, currentR
             <div className="text 2xl font-bold text-gray-400">
                 vs
             </div>
-            <div className={`flex flex-col items-center p-3 rounded-lg ${currentRole === "MAKER"? "bg-green-100 border-2 border-green-500":""}`}>
+            <div className={`flex flex-col items-center p-3 rounded-lg ${currentRole === "TAKER"? "bg-green-100 border-2 border-green-500":""}`}>
                 <span className="text-sm text-gray-600">Taker</span>
                 <span className="font-semibold">{takerName}</span>
                 <span className="text-2xl font-bold text-blue-600">{takerWins}</span>

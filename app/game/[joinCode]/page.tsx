@@ -11,6 +11,8 @@ import { Scoreboard } from "@/components/game/Scoreboard";
 import { MakerPanel } from "@/components/game/MakerPanel";
 import { TakerPanel } from "@/components/game/TakerPanel";
 import { TradeHistory } from "@/components/game/TradeRecord";
+import { RoundResult } from "@/components/game/RoundResult";
+import { GameOver } from "@/components/game/GameOver";
 
 export default async function GamePage({params,}:{params: Promise <{joinCode:string}>}) {
     const {joinCode} = await params
@@ -107,14 +109,14 @@ export default async function GamePage({params,}:{params: Promise <{joinCode:str
     // Active or finished
 
     return (<div>
-                <QuestionDisplay prompt= "what was Chinas population in 2024" unit="punds" roundIndex={1}/>
+                {/* <QuestionDisplay prompt= "what was Chinas population in 2024" unit="punds" roundIndex={1}/>
                 <Timer durationSeconds={60} isRunning={false} onTimeUp={null}  />
-                <Scoreboard makerName="Jason" takerName="John" makerWins={3} takerWins={3} currentRole="MAKER"/>
+                <Scoreboard makerName="Jason" takerName="John" makerWins={3} takerWins={3} currentRole="MAKER"/> */}
                 {/* <MakerPanel joinCode="kkkkkk" roundId="wkdkw" currentTurn={2} isMyTurn={true} onQuoteSubmitted={null}/> */}
-                <TakerPanel joinCode="kk" roundId="wdwdkw" currentTurn={5} currentQuote={{bid:5,ask:3}} isMyTurn={true} onTradeExecuted={null}/>
+                {/* <TakerPanel joinCode="kk" roundId="wdwdkw" currentTurn={5} currentQuote={{bid:5,ask:3}} isMyTurn={true} onTradeExecuted={null}/> */}
                 {/* <TakerPanel joinCode="kk" roundId="wdwdkw" currentTurn={5} currentQuote={null} isMyTurn={true} onTradeExecuted={null}/> */}
 
-                <TradeHistory trades={[{
+                {/* <TradeHistory trades={[{
                         turnIndex: 1,
                         bid: 98,
                         ask: 102,
@@ -124,7 +126,10 @@ export default async function GamePage({params,}:{params: Promise <{joinCode:str
                         bid: 100,
                         ask: 104,
                         side: null, // PASS
-                    }]} />
+                    }]} /> */}
+
+                    {/* <RoundResult roundIndex={1} correctAnswer={20} makerPnL={500} takerPnL={500} currentRole="MAKER" onContinue={null} isMaker={true}/> */}
+                    <GameOver makerName="Jason" takerName="John" makerWins={3} takerWins={2} currentRoles="MAKER" winnerId="123" currentUserId="123"/>
 
             </div>)
 
