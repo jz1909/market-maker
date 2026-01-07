@@ -13,80 +13,92 @@ import { relations } from "drizzle-orm";
 // ENUMS
 // ============================================================================
 
-export const gameStatusEnum = pgEnum("game_status", ["LOBBY", "ACTIVE", "FINISHED"]);
-export const roundStatusEnum = pgEnum("round_status", ["PENDING", "LIVE", "ENDED", "SETTLED"]);
+export const gameStatusEnum = pgEnum("game_status", [
+  "LOBBY",
+  "ACTIVE",
+  "FINISHED",
+]);
+export const roundStatusEnum = pgEnum("round_status", [
+  "PENDING",
+  "LIVE",
+  "ENDED",
+  "SETTLED",
+]);
 export const sideStatusEnum = pgEnum("side_status", ["BUY", "SELL"]);
 
 // ============================================================================
 // TABLES
 // ============================================================================
 
-export const users = pgTable('users', {
+export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").unique(),
   clerkUserId: text("clerk_user_id").notNull().unique(),
   displayName: text("display_name"),
-  createdAt: timestamp("created_at",{withTimezone: true}).notNull().defaultNow(),
-}
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
 
-)
-
-export const questions = pgTable('questions', {
-  id:uuid("id").primaryKey().defaultRandom(),
+export const questions = pgTable("questions", {
+  id: uuid("id").primaryKey().defaultRandom(),
   prompt: text("prompt").notNull().unique(),
   answer: numeric("answer").notNull(),
   unit: text("unit"),
   source: text("source"),
-  year:integer("year"),
-  createdAt:timestamp("created_at", {withTimezone: true}).notNull().defaultNow(),
+  year: integer("year"),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .notNull()
+    .defaultNow(),
+});
 
-})
-
-export const games = pgTable('games', {
-  id:uuid("id").primaryKey().defaultRandom(),
+export const games = pgTable("games", {
+  id: uuid("id").primaryKey().defaultRandom(),
   gameStatus: gameStatusEnum("game_status").notNull().default("LOBBY"),
   joinCode: text("join_code").unique().notNull(),
-  makerUserId:uuid("maker_user_id"),
-  takerUserId:uuid("taker_user_id"),
-  currentRoundIndex:integer("current_round_index").notNull().default(0),
-  createdAt:timestamp("created_at",{withTimezone: true}).defaultNow().notNull(),
-  startedAt:timestamp("started_at",{withTimezone: true}),
-  finishedAt:timestamp("finished_at",{withTimezone: true}),
-  winnerUserId:uuid("winner_user_id"),
-})
+  makerUserId: uuid("maker_user_id"),
+  takerUserId: uuid("taker_user_id"),
+  currentRoundIndex: integer("current_round_index").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true })
+    .defaultNow()
+    .notNull(),
+  startedAt: timestamp("started_at", { withTimezone: true }),
+  finishedAt: timestamp("finished_at", { withTimezone: true }),
+  winnerUserId: uuid("winner_user_id"),
+});
 
-export const rounds = pgTable ('rounds', {
-  id:uuid("id").primaryKey().defaultRandom(),
-  gameId:uuid("game_id").notNull(),
-  roundIndex:integer("round_index").notNull(),
-  roundStatus:roundStatusEnum("round_status").notNull(),
-  questionId:uuid("question_id").notNull(),
-  currentTurnIndex:integer("current_turn_index").notNull().default(0),
-  startedAt:timestamp("started_at",{withTimezone:true}),
-  endedAt:timestamp("ended_at",{withTimezone: true}),
-})
+export const rounds = pgTable("rounds", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  gameId: uuid("game_id").notNull(),
+  roundIndex: integer("round_index").notNull(),
+  roundStatus: roundStatusEnum("round_status").notNull(),
+  questionId: uuid("question_id").notNull(),
+  currentTurnIndex: integer("current_turn_index").notNull().default(0),
+  startedAt: timestamp("started_at", { withTimezone: true }),
+  endedAt: timestamp("ended_at", { withTimezone: true }),
+});
 
-export const quotes = pgTable('quotes', {
-  id:uuid("id").primaryKey().defaultRandom(),
-  roundId:uuid("round_id").notNull(),
-  turnIndex:integer("turn_index").notNull(),
-  makerUserId:uuid("maker_user_id").notNull(),
-  bid:numeric("bid").notNull(),
-  ask:numeric("ask").notNull(),
-  createdAt:timestamp("created_at", {withTimezone: true}).defaultNow(),
-})
+export const quotes = pgTable("quotes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  roundId: uuid("round_id").notNull(),
+  turnIndex: integer("turn_index").notNull(),
+  makerUserId: uuid("maker_user_id").notNull(),
+  bid: numeric("bid").notNull(),
+  ask: numeric("ask").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).defaultNow(),
+});
 
-export const trades = pgTable('trades', {
-  id:uuid("id").primaryKey().defaultRandom(),
-  roundId:uuid("round_id").notNull(),
-  turnIndex:integer("turn_index").notNull(),
-  gameId:uuid("game_id").notNull(),
-  takerUserId:uuid("taker_user_id").notNull(),
-  side:sideStatusEnum("side").notNull(),
-  price:numeric("price").notNull(),
-  quantity:integer("quantity").notNull(),
-  createdAt:timestamp("created_at", {withTimezone:true}),
-})
+export const trades = pgTable("trades", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  roundId: uuid("round_id").notNull(),
+  turnIndex: integer("turn_index").notNull(),
+  gameId: uuid("game_id").notNull(),
+  takerUserId: uuid("taker_user_id").notNull(),
+  side: sideStatusEnum("side").notNull(),
+  price: numeric("price").notNull(),
+  quantity: integer("quantity").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }),
+});
 
 // ============================================================================
 // RELATIONS
@@ -130,7 +142,7 @@ export const roundsRelations = relations(rounds, ({ one, many }) => ({
     references: [questions.id],
     relationName: "roundQuestion",
   }),
-  quote: many(quotes, {relationName: "quoteRound"}),
+  quote: many(quotes, { relationName: "quoteRound" }),
   trades: many(trades, { relationName: "tradeRound" }),
 }));
 

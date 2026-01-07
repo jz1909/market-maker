@@ -92,10 +92,7 @@ async function main() {
       }
     } catch (err) {
       // Handle unique constraint violation (duplicate prompt)
-      if (
-        err instanceof Error &&
-        err.message.includes("unique constraint")
-      ) {
+      if (err instanceof Error && err.message.includes("unique constraint")) {
         skipped++;
       } else {
         errors++;

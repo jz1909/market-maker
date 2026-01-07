@@ -25,6 +25,7 @@ npx drizzle-kit studio     # Open Drizzle Studio GUI
 ## Architecture
 
 ### Directory Structure
+
 ```
 market-maker/           # Next.js app root (package.json here)
 ├── app/                # Next.js App Router
@@ -45,6 +46,7 @@ market-maker/           # Next.js app root (package.json here)
 Note: `drizzle.config.ts` and `middleware.ts` are in the parent directory, not inside `market-maker/`.
 
 ### Key Technologies
+
 - **Next.js 16** with App Router and React 19
 - **Clerk** for authentication (middleware configured in parent directory)
 - **Drizzle ORM** with Neon PostgreSQL (`@neondatabase/serverless`)
@@ -53,33 +55,41 @@ Note: `drizzle.config.ts` and `middleware.ts` are in the parent directory, not i
 - **Zod** for validation
 
 ### TypeScript Configuration
+
 Strict mode enabled with additional checks:
+
 - `noUncheckedIndexedAccess: true`
 - `exactOptionalPropertyTypes: true`
 
 Path alias: `@/*` maps to project root.
 
 ### Environment Variables
+
 Required in `.env.local`:
+
 - `DATABASE_URL` - Neon PostgreSQL connection string
 - Clerk keys (see Clerk docs)
 
 ## Game Rules & Flow
 
 ### Game Structure
+
 - **1 Game = 3 Rounds**
 - **1 Round = 3 Turns**
 - Each round focuses on a single trivia question
 - Roles (Maker/Taker) do NOT switch during the game
 
 ### Turn Flow
+
 Each turn within a round:
+
 1. **Maker** submits a quote (bid/ask spread)
 2. **Taker** decides to BUY (hit ask), SELL (hit bid), or PASS
 3. Trade is recorded, turn ends
 4. Repeat for 3 turns total per round
 
 ### Round Flow
+
 1. Round starts with a random question displayed to both players
 2. 3 turns are played (maker quotes, taker trades)
 3. After 3 turns, the correct answer is revealed
@@ -87,6 +97,7 @@ Each turn within a round:
 5. Move to next round (or end game after round 3)
 
 ### Scoring
+
 - P&L is hidden until the end of each round (after all 3 turns complete)
 - P&L is calculated per trade based on trade price vs correct answer
 - If taker BUYS at price P and answer is A: Taker P&L = (A - P), Maker P&L = (P - A)

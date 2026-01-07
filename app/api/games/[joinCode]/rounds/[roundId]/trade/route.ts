@@ -6,101 +6,124 @@ import { NextResponse } from "next/server";
 import { executeTrade } from "@/lib/engine/game";
 import { getTradePrice } from "@/lib/engine/scoring";
 import { broadcastToGame } from "@/lib/realtime/eventEmitter";
-import { createGameEvent, TradeExecutedData, RoundEndedData } from
-"@/lib/realtime/events";
+import {
+  createGameEvent,
+  TradeExecutedData,
+  RoundEndedData,
+} from "@/lib/realtime/events";
 import { DEFAULT_GAME_CONFIG } from "@/lib/engine/types";
 
-export async function POST(req:Request, {params} : {params: Promise<{joinCode:string, roundId:string}>}){
-    const {joinCode, roundId} = await params
-    const body = await req.json()
-    const {side} = body 
+export async function POST(
+  req: Request,
+  { params }: { params: Promise<{ joinCode: string; roundId: string }> },
+) {
+  const { joinCode, roundId } = await params;
+  const body = await req.json();
+  const { side } = body;
 
-    if (side !== "BUY" && side !== "SELL" && side !== null) {
-      return NextResponse.json({ error: "Invalid side value" }, { status: 400 });    
-    }
+  if (side !== "BUY" && side !== "SELL" && side !== null) {
+    return NextResponse.json({ error: "Invalid side value" }, { status: 400 });
+  }
 
-    const {userId:clerkUserId} = await auth()
-    
-    if(!clerkUserId){
-        return NextResponse.json({error:"Not authenticated"}, {status: 401})
-    }
+  const { userId: clerkUserId } = await auth();
 
-    const dbUser = await db.query.users.findFirst({
-        where: eq(users.clerkUserId, clerkUserId)
-    })
+  if (!clerkUserId) {
+    return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
+  }
 
-    if(!dbUser){
-        return NextResponse.json({error:"User not found"}, {status:404})
-    }
+  const dbUser = await db.query.users.findFirst({
+    where: eq(users.clerkUserId, clerkUserId),
+  });
 
-    const game = await db.query.games.findFirst({
-        where: eq(games.joinCode, joinCode)
-    })
+  if (!dbUser) {
+    return NextResponse.json({ error: "User not found" }, { status: 404 });
+  }
 
-    if(!game){
-        return NextResponse.json({error:"Game not found"}, {status:404})
-    }
+  const game = await db.query.games.findFirst({
+    where: eq(games.joinCode, joinCode),
+  });
 
-    if(game.takerUserId !== dbUser.id){
+  if (!game) {
+    return NextResponse.json({ error: "Game not found" }, { status: 404 });
+  }
 
-        return NextResponse.json({error: "Only taker can make a trade"}, {status: 403})
+  if (game.takerUserId !== dbUser.id) {
+    return NextResponse.json(
+      { error: "Only taker can make a trade" },
+      { status: 403 },
+    );
+  }
 
-    }
+  const round = await db.query.rounds.findFirst({
+    where: eq(rounds.id, roundId),
+  });
 
-    const round = await db.query.rounds.findFirst({
-        where:eq(rounds.id, roundId)
-    })
+  if (!round) {
+    return NextResponse.json({ error: "Round not found" }, { status: 404 });
+  }
 
-    if(!round) {
-        return NextResponse.json({error:"Round not found"},{status:404})
-    }
+  if (round.roundStatus !== "LIVE") {
+    return NextResponse.json({ error: "Round is not live" }, { status: 400 });
+  }
 
-    if(round.roundStatus!=="LIVE"){
-        return NextResponse.json({error:"Round is not live"}, {status:400})
-    }
+  const currentQuote = await db.query.quotes.findFirst({
+    where: and(
+      eq(quotes.roundId, roundId),
+      eq(quotes.turnIndex, round.currentTurnIndex),
+    ),
+  });
 
-    const currentQuote = await db.query.quotes.findFirst({
-        where: and( eq(quotes.roundId, roundId), eq (quotes.turnIndex, round.currentTurnIndex))
-    })
+  if (!currentQuote) {
+    return NextResponse.json(
+      { error: "No quote for current turn" },
+      { status: 400 },
+    );
+  }
 
-     if (!currentQuote) {
-      return NextResponse.json({ error: "No quote for current turn" }, { status:     
-  400 });
-    }
+  let price = 0;
+  if (side !== null) {
+    price = getTradePrice(
+      Number(currentQuote.bid),
+      Number(currentQuote.ask),
+      side,
+    );
+  }
 
-    let price = 0
-    if (side !== null) {
-        price = getTradePrice(Number(currentQuote.bid), Number(currentQuote.ask), side)
-    }
+  const turnIndexBeforeTrade = round.currentTurnIndex;
 
-    const turnIndexBeforeTrade = round.currentTurnIndex
+  await executeTrade(
+    roundId,
+    turnIndexBeforeTrade,
+    game.id,
+    dbUser.id,
+    side,
+    price,
+  );
 
-    await executeTrade(roundId, turnIndexBeforeTrade, game.id, dbUser.id, side, price)
+  const tradeEventData: TradeExecutedData = {
+    turnIndex: turnIndexBeforeTrade,
+    side,
+  };
 
-    const tradeEventData: TradeExecutedData = {
-        turnIndex: turnIndexBeforeTrade,
-        side,
-    }
+  broadcastToGame(joinCode, createGameEvent("trade-executed", tradeEventData));
 
-    broadcastToGame(joinCode, createGameEvent("trade-executed", tradeEventData))
+  // check if round ended
 
-    // check if round ended
+  const updatedRound = await db.query.rounds.findFirst({
+    where: eq(rounds.id, roundId),
+  });
 
-    const updatedRound = await db.query.rounds.findFirst({
-        where:eq(rounds.id, roundId)
-    })
+  if (updatedRound?.roundStatus === "ENDED") {
+    const roundEndedData: RoundEndedData = {
+      roundIndex: round.roundIndex,
+    };
 
-    if(updatedRound?.roundStatus === "ENDED"){
-        const roundEndedData: RoundEndedData = {
-            roundIndex: round.roundIndex
-        }
+    broadcastToGame(joinCode, createGameEvent("round-ended", roundEndedData));
+  }
 
-        broadcastToGame(joinCode, createGameEvent("round-ended", roundEndedData))
-    }
-
-    return NextResponse.json({success:true, turnIndex: turnIndexBeforeTrade, roundEnded:updatedRound?.roundStatus === "ENDED"})
-
-    
-
-
+  return NextResponse.json({
+    success: true,
+    turnIndex: turnIndexBeforeTrade,
+    roundEnded: updatedRound?.roundStatus === "ENDED",
+  });
 }

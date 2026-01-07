@@ -14,27 +14,32 @@ type GameWithRelations = typeof games.$inferSelect & {
   taker: DbUser | null;
 };
 
-export default async function Home(){
-  const user = await currentUser()
-  let dbUser: DbUser | undefined
-  let userGames: GameWithRelations[] = []
-  if(user){
-      dbUser = await db.query.users.findFirst({
-      where: eq(users.clerkUserId, user.id)
-  });
+export default async function Home() {
+  const user = await currentUser();
+  let dbUser: DbUser | undefined;
+  let userGames: GameWithRelations[] = [];
+  if (user) {
+    dbUser = await db.query.users.findFirst({
+      where: eq(users.clerkUserId, user.id),
+    });
 
-  if (dbUser){
-    userGames = await db.query.games.findMany({
-      where: or(eq(games.makerUserId, dbUser.id),eq(games.takerUserId, dbUser.id)), orderBy:(games, {desc}) =>[desc(games.createdAt)], with:{maker:true, taker:true},
-    })
+    if (dbUser) {
+      userGames = await db.query.games.findMany({
+        where: or(
+          eq(games.makerUserId, dbUser.id),
+          eq(games.takerUserId, dbUser.id),
+        ),
+        orderBy: (games, { desc }) => [desc(games.createdAt)],
+        with: { maker: true, taker: true },
+      });
+    }
   }
-}
-  
+
   return (
     <div className="min-h-screen p-8">
-      <header className = "flex justify-between items-center mb-8">
+      <header className="flex justify-between items-center mb-8">
         <Link href="/">
-          <h1 className = "text-2xl font-bold">Market Maker</h1>
+          <h1 className="text-2xl font-bold">Market Maker</h1>
         </Link>
         <SignedIn>
           <UserButton />
@@ -54,62 +59,68 @@ export default async function Home(){
                 <h1 className="text-4xl font-bold">Welcome to Market-Maker</h1>
               </div>
               <div className="text-3xl">
-                Market-Maker is a hybrid game that combines the elements of quiz bowl and market-making. Market-maker is a real-time
-                multiplayer trading game that allows you to be the maker or taker of a contract in the form of a trivia question.
-                It includes over thousands of questions and more are constantly being added.
+                Market-Maker is a hybrid game that combines the elements of quiz
+                bowl and market-making. Market-maker is a real-time multiplayer
+                trading game that allows you to be the maker or taker of a
+                contract in the form of a trivia question. It includes over
+                thousands of questions and more are constantly being added.
               </div>
               <div className="text-3xl">
-                If you have any particular questions, feel free to reach out to jsh27335@gmail.com for any help.
+                If you have any particular questions, feel free to reach out to
+                jsh27335@gmail.com for any help.
               </div>
-            <SignInButton>
-              <Button className="bg-blue-500 font-bold mt-2">Sign In</Button>
-            </SignInButton>
+              <SignInButton>
+                <Button className="bg-blue-500 font-bold mt-2">Sign In</Button>
+              </SignInButton>
             </div>
-           
           </div>
         </SignedOut>
         <SignedIn>
           <div className="flex flex-col gap-4 mb-8 p-10">
             <div className="flex flex-col justify-between items-center gap-20 bg-gray-100 p-25 rounded-lg">
               <div className="flex items-center justify-center w-full">
-                <CreateGameButton/>
+                <CreateGameButton />
               </div>
 
-              <div className="text-4xl font-extrabold">
-                or
-              </div>
+              <div className="text-4xl font-extrabold">or</div>
 
               <div className="">
                 <JoinGameForm />
               </div>
             </div>
           </div>
-          
+
           <section className="mb-200">
-            <h2 className="text-4xl font-semibold mb-10">
-              Your games
-            </h2>
-            {userGames.length === 0 ? (<p className="text-xl text-gray-500">No games yet. Create or join one to start!</p>)
-            :(<ul className="space-y-6 flex flex-col items-center justify-center">
-              {userGames.map((game) => (
-                <li key={game.id} className="w-[40vw] p-4 border-3 border-gray-500 rounded flex justify-between items-center">
-                  <span className="font-mono text-sm">{game.joinCode}</span>
-                  <span className="ml-4 text-sm text-gray-500">{game.gameStatus}</span>
-                  <span className="ml-4"> 
-                  vs {game.makerUserId === dbUser?.id ? (game.taker?.displayName ?? "Waiting..."): (game.maker?.displayName ?? "Waiting...")}
-                  </span>
-                  <Link href={`/game/${game.joinCode}`}>Open</Link>
-                </li>
-              ))}
-            </ul>)}
+            <h2 className="text-4xl font-semibold mb-10">Your games</h2>
+            {userGames.length === 0 ? (
+              <p className="text-xl text-gray-500">
+                No games yet. Create or join one to start!
+              </p>
+            ) : (
+              <ul className="space-y-6 flex flex-col items-center justify-center">
+                {userGames.map((game) => (
+                  <li
+                    key={game.id}
+                    className="w-[40vw] p-4 border-3 border-gray-500 rounded flex justify-between items-center"
+                  >
+                    <span className="font-mono text-sm">{game.joinCode}</span>
+                    <span className="ml-4 text-sm text-gray-500">
+                      {game.gameStatus}
+                    </span>
+                    <span className="ml-4">
+                      vs{" "}
+                      {game.makerUserId === dbUser?.id
+                        ? (game.taker?.displayName ?? "Waiting...")
+                        : (game.maker?.displayName ?? "Waiting...")}
+                    </span>
+                    <Link href={`/game/${game.joinCode}`}>Open</Link>
+                  </li>
+                ))}
+              </ul>
+            )}
           </section>
-
         </SignedIn>
-
       </main>
-
     </div>
-  )
-
-  
+  );
 }

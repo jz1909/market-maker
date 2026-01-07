@@ -9,12 +9,7 @@ export default defineConfig([
   ...nextTs,
 
   // Optional: explicit ignores (can remove if you want defaults)
-  globalIgnores([
-    ".next/**",
-    "out/**",
-    "build/**",
-    "next-env.d.ts",
-  ]),
+  globalIgnores([".next/**", "out/**", "build/**", "next-env.d.ts"]),
 
   // Must come last
   prettier,
