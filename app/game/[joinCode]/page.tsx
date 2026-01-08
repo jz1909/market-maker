@@ -1,7 +1,7 @@
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/db";
-import { users, games } from "@/lib/schema/schema";
-import { eq } from "drizzle-orm";
+import { users, games, rounds, quotes, trades } from "@/lib/schema/schema";
+import { and, desc, eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { StartGameButton } from "@/components/StartGameButton";
@@ -13,6 +13,8 @@ import { TakerPanel } from "@/components/game/TakerPanel";
 import { TradeHistory } from "@/components/game/TradeRecord";
 import { RoundResult } from "@/components/game/RoundResult";
 import { GameOver } from "@/components/game/GameOver";
+import { GameController } from "@/components/game/GameController";
+import { LobbyController } from "@/components/game/LobbyController";
 
 export default async function GamePage({
   params,
@@ -27,7 +29,6 @@ export default async function GamePage({
     redirect("/");
   }
 
-  // Map clerk user and get id
   const dbUser = await db.query.users.findFirst({
     where: eq(users.clerkUserId, clerkUserId),
   });
@@ -36,7 +37,7 @@ export default async function GamePage({
     redirect("/");
   }
 
-  // Fetch game with maker taker info (joinCode is unique per schema)
+  // Fetch game 
   const game = await db.query.games.findFirst({
     where: eq(games.joinCode, joinCode),
     with: { maker: true, taker: true },
@@ -63,114 +64,99 @@ export default async function GamePage({
 
   // render game page based on status aswell
 
-  if (game.gameStatus === "LOBBY") {
+   if (game.gameStatus === "LOBBY") {
     return (
-      <div className="min-h-screen p-8">
-        <header className="mb-8">
-          <Link
-            href="/"
-            className="text-white hover:underline bg-blue-500 rounded-2xl p-3"
-          >
-            Back to home
-          </Link>
-        </header>
-        <main className="w-fill flex flex-col items-center justify-center">
-          <h1 className="text-3xl font-bold mb-8"> Game Lobby </h1>
-
-          {/* Join Code */}
-          <div className="flex flex-col justify-center items-center bg-gray-100 rounded-2xl p-5">
-            <p className="text-xl">Share this code with your opponent:</p>
-            <p className="text-4xl font-mono tracking-widest mt-3">
-              {game.joinCode}
-            </p>
-          </div>
-
-          {/* player slots  */}
-          <div className="grid grid-cols-2 gap-10 mb-8 mt-10">
-            {/* Maker */}
-            <div
-              className={`p-4 rounded-lg border-2 ${isMaker ? "border-blue-500 bg-blue-50" : "border-gray-300"}`}
-            >
-              <p className="text-lg font-bold">Market Maker</p>
-              <p className="text-center">
-                {game.maker?.displayName ?? "Unknown"}
-              </p>
-              {isMaker && <div className="text-xs text-center"> (You) </div>}
-            </div>
-
-            {/* Taker */}
-            <div
-              className={`p-4 rounded-lg border-2 ${isTaker ? "border-blue-500 bg-blue-50" : "border-gray-300"}`}
-            >
-              <p className="text-lg font-bold">Market Taker</p>
-              <p className="text-center">
-                {game.taker?.displayName ?? "Unknown"}
-              </p>
-              {isTaker && <div className="text-xs text-center"> You </div>}
-            </div>
-          </div>
-
-          {/* Start game button, but only appears for maker and when both players are present */}
-          <div>
-            <StartGameButton
-              disabled={!bothPlayerPresent || isTaker}
-              className={` hover:bg-gray-800 p-7 border-blue-50 border-4 
-                        ${bothPlayerPresent ? "" : "bg-none bg-gray-100 border-gray text-gray-400 hover:bg-gray-100"}`}
-              joinCode={game.joinCode}
-            />
-          </div>
-
-          {/* Waiting for taker... */}
-          {isTaker && (
-            <div className="text-center text-gray-600 mt-12 text-lg">
-              Waiting for host to start the game...
-            </div>
-          )}
-
-          {/* Waiting for the maker */}
-          {isMaker && !bothPlayerPresent && (
-            <div className="text-center text-gray-600 mt-12 text-lg">
-              Waiting for an opponent to join...
-            </div>
-          )}
-        </main>
-      </div>
-    );
+      <LobbyController
+        joinCode={joinCode}
+        game={{
+          id: game.id,
+          makerUserId: game.makerUserId!,
+          takerUserId: game.takerUserId,
+          makerName: game.maker?.displayName ?? "Unknown",
+          takerName: game.taker?.displayName ?? null,
+        }}
+        currentUserId={dbUser.id}
+      />
+    )
   }
 
   // Active or finished
 
-  return (
-    <div>
-      {/* <QuestionDisplay prompt= "what was Chinas population in 2024" unit="punds" roundIndex={1}/>
-                <Timer durationSeconds={60} isRunning={false} onTimeUp={null}  />
-                <Scoreboard makerName="Jason" takerName="John" makerWins={3} takerWins={3} currentRole="MAKER"/> */}
-      {/* <MakerPanel joinCode="kkkkkk" roundId="wkdkw" currentTurn={2} isMyTurn={true} onQuoteSubmitted={null}/> */}
-      {/* <TakerPanel joinCode="kk" roundId="wdwdkw" currentTurn={5} currentQuote={{bid:5,ask:3}} isMyTurn={true} onTradeExecuted={null}/> */}
-      {/* <TakerPanel joinCode="kk" roundId="wdwdkw" currentTurn={5} currentQuote={null} isMyTurn={true} onTradeExecuted={null}/> */}
+  const currentRound = await db.query.rounds.findFirst({
+    where: and(
+      eq(rounds.gameId, game.id),
+      eq(rounds.roundIndex, game.currentRoundIndex)
+    ),
+    with: { question: true }
+  });
 
-      {/* <TradeHistory trades={[{
-                        turnIndex: 1,
-                        bid: 98,
-                        ask: 102,
-                        side: "BUY",
-                    }, {
-                        turnIndex: 2,
-                        bid: 100,
-                        ask: 104,
-                        side: null, // PASS
-                    }]} /> */}
+    let initialQuote: {bid:number, ask:number} | null = null
+    if (currentRound){
+        const latestQuote = await db.query.quotes.findFirst({
+            where: and(
+                eq(quotes.roundId, currentRound.id),
+                eq(quotes.turnIndex, currentRound.currentTurnIndex)
+            ), orderBy: desc(quotes.createdAt)
+        })
 
-      {/* <RoundResult roundIndex={1} correctAnswer={20} makerPnL={500} takerPnL={500} currentRole="MAKER" onContinue={null} isMaker={true}/> */}
-      <GameOver
-        makerName="Jason"
-        takerName="John"
-        makerWins={3}
-        takerWins={2}
-        currentRoles="MAKER"
-        winnerId="123"
-        currentUserId="123"
-      />
-    </div>
-  );
+        if (latestQuote){
+            initialQuote = {
+                bid:Number(latestQuote.bid),
+                ask:Number(latestQuote.ask)
+            }
+        }
+    }
+
+    const initialTrades = currentRound
+      ? (await db
+          .select({
+            turnIndex: trades.turnIndex,
+            side: trades.side,
+            bid: quotes.bid,
+            ask: quotes.ask,
+          })
+          .from(trades)
+          .leftJoin(quotes, and(
+            eq(trades.roundId, quotes.roundId),
+            eq(trades.turnIndex, quotes.turnIndex)
+          ))
+          .where(eq(trades.roundId, currentRound.id))
+        ).map((t) => ({
+          turnIndex: t.turnIndex,
+          side: t.side as "BUY" | "SELL" |null,
+          bid: Number(t.bid ?? 0),
+          ask: Number(t.ask ?? 0),
+        }))
+      : [];
+
+      const initialRoundData = currentRound?{
+        id:currentRound.id,
+        roundIndex: currentRound.roundIndex,
+        currentTurnIndex: currentRound.currentTurnIndex,
+        status: currentRound.roundStatus as "PENDING" | "LIVE" | "ENDED"     
+        | "SETTLED",
+        questionPrompt: currentRound.question.prompt,
+        questionUnit: currentRound.question.unit,
+        questionAnswer: Number(currentRound.question.answer)
+      }: null
+
+      return (
+        <GameController joinCode = {joinCode} game={{
+            id:game.id,
+            status: game.gameStatus as "LOBBY" | "ACTIVE" | "FINISHED",
+            makerUserId: game.makerUserId!,
+            takerUserId: game.takerUserId,
+            makerName: game.maker?.displayName ?? "Unknown",
+            takerName: game.taker?.displayName ?? null,
+            winnerId: game.winnerUserId,
+        }}
+        currentUserId = {dbUser.id}
+        initialRound = {initialRoundData}
+        initialQuote = {initialQuote}
+        initialTrades = {initialTrades} />
+      )
+
+
+
+
 }

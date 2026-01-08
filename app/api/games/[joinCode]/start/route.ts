@@ -3,6 +3,9 @@ import { db } from "@/lib/db";
 import { users, games, rounds, questions } from "@/lib/schema/schema";
 import { eq, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { startRound } from "@/lib/engine/game";
+import { broadcastToGame } from "@/lib/realtime/eventEmitter";
+import { createGameEvent, GameStartedData, RoundStartedData } from "@/lib/realtime/events";
 
 export async function POST(
   req: Request,
@@ -86,6 +89,11 @@ export async function POST(
     })
     .returning();
 
+  // Set round to LIVE so maker can submit quotes
+  if (newRound) {
+    await startRound(newRound.id);
+  }
+
   await db
     .update(games)
     .set({
@@ -93,6 +101,23 @@ export async function POST(
       startedAt: new Date(),
     })
     .where(eq(games.id, game.id));
+
+  // Broadcast game-started so taker's lobby refreshes
+  if (newRound) {
+    const gameStartedData: GameStartedData = {
+      roundId: newRound.id,
+      roundIndex: 0,
+    };
+    broadcastToGame(joinCode, createGameEvent("game-started", gameStartedData));
+
+    // Also broadcast round-started with question data
+    const roundStartedData: RoundStartedData = {
+      roundId: newRound.id,
+      questionPrompt: randomQuestion.prompt,
+      questionUnit: randomQuestion.unit,
+    };
+    broadcastToGame(joinCode, createGameEvent("round-started", roundStartedData));
+  }
 
   return NextResponse.json({
     success: true,

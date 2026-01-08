@@ -3,7 +3,7 @@ import { db } from "@/lib/db";
 import { users, games, rounds } from "@/lib/schema/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { advanceGame } from "@/lib/engine/game";
+import { advanceGame, startRound } from "@/lib/engine/game";
 import { broadcastToGame } from "@/lib/realtime/eventEmitter";
 import {
   createGameEvent,
@@ -97,6 +97,11 @@ export async function POST(
       makerW,
       takerW,
     });
+  }
+
+  // Set new round to LIVE
+  if (result.nextRoundId) {
+    await startRound(result.nextRoundId);
   }
 
   const continueEventdata: GameStartedData = {

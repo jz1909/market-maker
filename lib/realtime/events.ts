@@ -16,6 +16,11 @@ export interface GameEvent {
   data: unknown;
 }
 
+export interface PlayerJoinedData {
+  takerName: string;
+  takerId: string;
+}
+
 export interface GameStartedData {
   roundId: string;
   roundIndex: number;

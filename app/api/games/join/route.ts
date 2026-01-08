@@ -3,6 +3,8 @@ import { db } from "@/lib/db";
 import { users, games } from "@/lib/schema/schema";
 import { eq, and } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import { broadcastToGame } from "@/lib/realtime/eventEmitter";
+import { createGameEvent, PlayerJoinedData } from "@/lib/realtime/events";
 
 export async function POST(req: Request) {
   const { userId: clerkUserId } = await auth();
@@ -63,6 +65,13 @@ export async function POST(req: Request) {
     .update(games)
     .set({ takerUserId: dbUser.id })
     .where(eq(games.id, game.id));
+
+  // Broadcast to maker that taker has joined
+  const playerJoinedData: PlayerJoinedData = {
+    takerName: dbUser.displayName ?? "Unknown",
+    takerId: dbUser.id,
+  };
+  broadcastToGame(game.joinCode, createGameEvent("player-joined", playerJoinedData));
 
   return NextResponse.json({ gameId: game.id, joinCode: game.joinCode });
 }

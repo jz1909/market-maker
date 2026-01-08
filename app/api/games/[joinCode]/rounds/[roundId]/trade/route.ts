@@ -3,13 +3,13 @@ import { db } from "@/lib/db";
 import { users, games, rounds, quotes } from "@/lib/schema/schema";
 import { eq, and } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { executeTrade } from "@/lib/engine/game";
+import { executeTrade, settleRound } from "@/lib/engine/game";
 import { getTradePrice } from "@/lib/engine/scoring";
 import { broadcastToGame } from "@/lib/realtime/eventEmitter";
 import {
   createGameEvent,
   TradeExecutedData,
-  RoundEndedData,
+  RoundSettledData,
 } from "@/lib/realtime/events";
 import { DEFAULT_GAME_CONFIG } from "@/lib/engine/types";
 
@@ -107,18 +107,25 @@ export async function POST(
 
   broadcastToGame(joinCode, createGameEvent("trade-executed", tradeEventData));
 
-  // check if round ended
-
+  // check if round ended, auto-settle if so
   const updatedRound = await db.query.rounds.findFirst({
     where: eq(rounds.id, roundId),
   });
 
   if (updatedRound?.roundStatus === "ENDED") {
-    const roundEndedData: RoundEndedData = {
-      roundIndex: round.roundIndex,
-    };
+    // Auto-settle the round
+    const settleResult = await settleRound(roundId);
 
-    broadcastToGame(joinCode, createGameEvent("round-ended", roundEndedData));
+    if (settleResult) {
+      const roundSettledData: RoundSettledData = {
+        roundIndex: round.roundIndex,
+        correctAnswer: settleResult.correctAnswer,
+        makerPnL: settleResult.makerPnL,
+        takerPnL: settleResult.takerPnL,
+      };
+
+      broadcastToGame(joinCode, createGameEvent("round-settled", roundSettledData));
+    }
   }
 
   return NextResponse.json({

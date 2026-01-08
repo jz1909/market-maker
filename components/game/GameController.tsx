@@ -14,7 +14,7 @@ interface GameControllerProps {
   joinCode: string;
   game: {
     id: string;
-    status: "LOBBY" | "ACTIVE" | "ENDED";
+    status: "LOBBY" | "ACTIVE" | "FINISHED";
     makerUserId: string;
     takerUserId: string | null;
     makerName: string;
@@ -65,6 +65,7 @@ export function GameController({
     makerPnL: number;
     takerPnL: number;
   } | null>(null);
+  const [roundEnded, setRoundEnded] = useState(false);
 
   const [waitingForTaker, setWaitingForTaker] = useState(!!initialQuote);
   const isMyTurn = isMaker ? !waitingForTaker : waitingForTaker;
@@ -141,6 +142,12 @@ export function GameController({
 
         break;
       }
+      case "round-ended": {
+        // Round has ended after 3 turns, need to settle
+        setRoundEnded(true);
+        break;
+      }
+
       case "round-settled": {
         const data = lastEvent.data as {
           correctAnswer: number;
@@ -152,6 +159,7 @@ export function GameController({
           makerPnL: data.makerPnL,
           takerPnL: data.takerPnL,
         });
+        setRoundEnded(false);
 
         if (data.makerPnL > data.takerPnL) {
           setMakerWins((prev) => prev + 1);
@@ -166,7 +174,7 @@ export function GameController({
           makerW: number;
           takerW: number;
         };
-        setGameStatus("ENDED");
+        setGameStatus("FINISHED");
         setWinnerId(data.winnerId);
         setMakerWins(data.makerW);
         setTakerWins(data.takerW);
@@ -179,6 +187,22 @@ export function GameController({
 
   const handleTradeExecuted = () => {};
 
+  // Called when round ends - settles the round to reveal P&L
+  const handleSettle = async () => {
+    if (!currentRound) return;
+    const res = await fetch(
+      `/api/games/${joinCode}/rounds/${currentRound.id}/settle`,
+      {
+        method: "POST",
+      },
+    );
+
+    if (!res.ok) {
+      console.error("Failed to settle round");
+    }
+  };
+
+  // Called after seeing round result - advances to next round or ends game
   const handleContinue = async () => {
     if (!currentRound) return;
     const res = await fetch(
@@ -193,7 +217,7 @@ export function GameController({
     }
   };
 
-  if (gameStatus === "ENDED") {
+  if (gameStatus === "FINISHED") {
     return (
       <GameOver
         makerName={game.makerName}
