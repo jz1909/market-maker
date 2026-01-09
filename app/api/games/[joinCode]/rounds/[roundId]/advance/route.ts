@@ -4,13 +4,14 @@ import { users, games, rounds } from "@/lib/schema/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { advanceGame, startRound } from "@/lib/engine/game";
-import { broadcastToGame } from "@/lib/realtime/eventEmitter";
 import {
   createGameEvent,
   GameStartedData,
   GameEndedData,
-} from "@/lib/realtime/events";
+  RoundStartedData,
+} from "@/lib/supabase_realtime/events";
 import { calculateGameWin, calculateRoundPnL } from "@/lib/engine/scoring";
+import { broadcastToGame } from "@/lib/supabase_realtime/broadcast";
 
 export async function POST(
   req: Request,
@@ -99,17 +100,33 @@ export async function POST(
     });
   }
 
-  // Set new round to LIVE
+  // Set new round to LIVE and fetch question data
   if (result.nextRoundId) {
     await startRound(result.nextRoundId);
+
+    // Fetch the new round with question data for broadcast
+    const newRound = await db.query.rounds.findFirst({
+      where: eq(rounds.id, result.nextRoundId),
+      with: { question: true },
+    });
+
+    if (newRound) {
+      const continueEventdata: GameStartedData = {
+        roundId: result.nextRoundId,
+        roundIndex: newRound.roundIndex,
+      };
+      broadcastToGame(joinCode, createGameEvent("game-started", continueEventdata));
+
+      // Also broadcast round-started with question data
+      const roundStartedData: RoundStartedData = {
+        roundId: result.nextRoundId,
+        roundIndex: newRound.roundIndex,
+        questionPrompt: newRound.question.prompt,
+        questionUnit: newRound.question.unit,
+      };
+      broadcastToGame(joinCode, createGameEvent("round-started", roundStartedData));
+    }
   }
-
-  const continueEventdata: GameStartedData = {
-    roundId: result.nextRoundId!,
-    roundIndex: game.currentRoundIndex + 1,
-  };
-
-  broadcastToGame(joinCode, createGameEvent("game-started", continueEventdata));
 
   return NextResponse.json({
     success: true,

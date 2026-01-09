@@ -1,7 +1,7 @@
-// defines the event types that can be sent to clients
-
 export type GameEventType =
   | "player-joined"
+  | "player-left"
+  | "player-rejoined"
   | "game-started"
   | "round-started"
   | "quote-submitted"
@@ -28,6 +28,7 @@ export interface GameStartedData {
 
 export interface RoundStartedData {
   roundId: string;
+  roundIndex: number;
   questionPrompt: string;
   questionUnit: string | null;
 }

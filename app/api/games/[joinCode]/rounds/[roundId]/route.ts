@@ -4,8 +4,8 @@ import { users, games, rounds } from "@/lib/schema/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { startRound } from "@/lib/engine/game";
-import { broadcastToGame } from "@/lib/realtime/eventEmitter";
-import { createGameEvent, RoundStartedData } from "@/lib/realtime/events";
+import { broadcastToGame } from "@/lib/supabase_realtime/broadcast";
+import { createGameEvent, RoundStartedData } from "@/lib/supabase_realtime/events";
 
 export async function POST(
   req: Request,
@@ -64,6 +64,7 @@ export async function POST(
 
   const eventData: RoundStartedData = {
     roundId,
+    roundIndex: round.roundIndex,
     questionPrompt: round.question.prompt,
     questionUnit: round.question.unit,
   };

@@ -5,13 +5,13 @@ import { eq, and } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { executeTrade, settleRound } from "@/lib/engine/game";
 import { getTradePrice } from "@/lib/engine/scoring";
-import { broadcastToGame } from "@/lib/realtime/eventEmitter";
 import {
   createGameEvent,
   TradeExecutedData,
   RoundSettledData,
-} from "@/lib/realtime/events";
+} from "@/lib/supabase_realtime/events";
 import { DEFAULT_GAME_CONFIG } from "@/lib/engine/types";
+import { broadcastToGame } from "@/lib/supabase_realtime/broadcast";
 
 export async function POST(
   req: Request,

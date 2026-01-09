@@ -5,8 +5,8 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { submitQuote } from "@/lib/engine/game";
 import { isValidQuote } from "@/lib/engine/scoring";
-import { broadcastToGame } from "@/lib/realtime/eventEmitter";
-import { createGameEvent, QuoteSubmittedData } from "@/lib/realtime/events";
+import { createGameEvent, QuoteSubmittedData } from "@/lib/supabase_realtime/events";
+import { broadcastToGame } from "@/lib/supabase_realtime/broadcast";
 
 export async function POST(
   req: Request,

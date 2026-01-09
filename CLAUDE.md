@@ -50,7 +50,7 @@ Note: `drizzle.config.ts` and `middleware.ts` are in the parent directory, not i
 - **Next.js 16** with App Router and React 19
 - **Clerk** for authentication (middleware configured in parent directory)
 - **Drizzle ORM** with Neon PostgreSQL (`@neondatabase/serverless`)
-- **Socket.IO** for real-time game updates
+- **Supabase Realtime** for real-time game updates (Broadcast channels)
 - **Tailwind CSS 4** with shadcn/ui (new-york style)
 - **Zod** for validation
 
@@ -68,6 +68,9 @@ Path alias: `@/*` maps to project root.
 Required in `.env.local`:
 
 - `DATABASE_URL` - Neon PostgreSQL connection string
+- `NEXT_PUBLIC_SUPABASE_URL` - Supabase project URL
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` - Supabase anon/public key
+- `SUPABASE_SERVICE_ROLE_KEY` - Supabase service role key (server-side only)
 - Clerk keys (see Clerk docs)
 
 ## Game Rules & Flow
@@ -103,3 +106,48 @@ Each turn within a round:
 - If taker BUYS at price P and answer is A: Taker P&L = (A - P), Maker P&L = (P - A)
 - If taker SELLS at price P and answer is A: Taker P&L = (P - A), Maker P&L = (A - P)
 - Total score = sum of all P&L across all trades in all rounds
+
+## Real-Time Architecture (Supabase Broadcast)
+
+### Overview
+
+Real-time communication uses **Supabase Realtime Broadcast** channels. This solves the serverless isolation problem where different API routes can't share in-memory state.
+
+### How It Works
+
+1. **Channel per Game**: Each game has a channel named `game:{joinCode}`
+2. **Clients Subscribe**: Both maker and taker subscribe to the channel on page load
+3. **Server Publishes**: API routes broadcast events to the channel using Supabase server client
+4. **WebSocket Delivery**: Supabase delivers events to all subscribed clients via WebSocket
+
+### Event Flow
+
+```
+Player Action → API Route → Supabase Broadcast → All Connected Clients
+```
+
+Example: Taker joins game
+1. Taker calls `POST /api/games/join`
+2. API route updates DB, then broadcasts `player-joined` event to `game:{joinCode}` channel
+3. Maker's browser receives event via WebSocket
+4. React state updates, UI refreshes
+
+### Files
+
+- `lib/supabase/client.ts` - Browser client (uses anon key)
+- `lib/supabase/server.ts` - Server client (uses service role key)
+- `lib/realtime/useGameChannel.ts` - React hook to subscribe to game channel
+- `lib/realtime/broadcast.ts` - Server-side function to broadcast events
+- `lib/realtime/events.ts` - Event type definitions (unchanged)
+
+### Event Types
+
+All events defined in `lib/realtime/events.ts`:
+- `player-joined` - Taker joined the lobby
+- `game-started` - Game transitioned from LOBBY to ACTIVE
+- `round-started` - New round began with question data
+- `quote-submitted` - Maker submitted bid/ask
+- `trade-executed` - Taker bought/sold/passed
+- `round-ended` - All turns complete
+- `round-settled` - P&L calculated and revealed
+- `game-ended` - All rounds complete, winner determined

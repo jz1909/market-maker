@@ -2,9 +2,9 @@
 
   import { useEffect, useState } from "react"
   import { useRouter } from "next/navigation"
-  import { useGameEvents } from "@/lib/realtime/useGameEvents"
   import { StartGameButton } from "@/components/StartGameButton"
   import Link from "next/link"
+import { useGameChannel } from "@/lib/supabase_realtime/useGameChannel"
 
   interface LobbyControllerProps {
     joinCode: string
@@ -28,34 +28,50 @@
     const isMaker = game.makerUserId === currentUserId
     const isTaker = game.takerUserId === currentUserId
 
-    // State that can update via SSE
     const [takerName, setTakerName] = useState(game.takerName)
     const [takerId, setTakerId] = useState(game.takerUserId)
 
     const bothPlayersPresent = game.makerUserId && takerId
 
-    // SSE subscription
-    const { isConnected, lastEvent } = useGameEvents(joinCode)
+    const currentRole = isMaker ? "maker" : "taker"
+    const currentDisplayName = isMaker ? game.makerName : (game.takerName ?? "Unknown")
+    const { isConnected, lastEvent } = useGameChannel(joinCode, currentUserId, currentRole, currentDisplayName)
 
     useEffect(() => {
       if (!lastEvent) return
 
       switch (lastEvent.type) {
         case "player-joined": {
-          const data = lastEvent.data as { takerName: string; takerId:
-  string }
+          const data = lastEvent.data as { takerName: string; takerId: string }
           setTakerName(data.takerName)
           setTakerId(data.takerId)
           break
         }
 
+        case "player-left": {
+          const data = lastEvent.data as { userId: string }
+          if (data.userId === takerId) {
+            setTakerName(null)
+            setTakerId(null)
+          }
+          break
+        }
+
+        case "player-rejoined": {
+          const data = lastEvent.data as { userId: string; role: string; displayName: string }
+          if (data.role === "taker" && data.userId !== currentUserId) {
+            setTakerId(data.userId)
+            setTakerName(data.displayName)
+          }
+          break
+        }
+
         case "game-started": {
-          // Refresh the page to load GameController with active game
           router.refresh()
           break
         }
       }
-    }, [lastEvent, router])
+    }, [lastEvent, router, takerId])
 
     return (
       <div className="min-h-screen p-8">
@@ -71,7 +87,6 @@
         <main className="w-fill flex flex-col items-center justify-center">    
           <h1 className="text-3xl font-bold mb-8">Game Lobby</h1>
 
-          {/* Join Code */}
           <div className="flex flex-col justify-center items-center
   bg-gray-100 rounded-2xl p-5">
             <p className="text-xl">Share this code with your opponent:</p>     
@@ -79,9 +94,7 @@
   mt-3">{joinCode}</p>
           </div>
 
-          {/* Player slots */}
           <div className="grid grid-cols-2 gap-10 mb-8 mt-10">
-            {/* Maker */}
             <div
               className={`p-4 rounded-lg border-2 ${isMaker ?
   "border-blue-500 bg-blue-50" : "border-gray-300"}`}
@@ -91,7 +104,6 @@
               {isMaker && <div className="text-xs text-center">(You)</div>}    
             </div>
 
-            {/* Taker */}
             <div
               className={`p-4 rounded-lg border-2 ${isTaker ?
   "border-blue-500 bg-blue-50" : "border-gray-300"}`}
@@ -102,17 +114,15 @@
             </div>
           </div>
 
-          {/* Start game button */}
           <div>
             <StartGameButton
               disabled={!bothPlayersPresent || isTaker}
-              className={`hover:bg-gray-800 p-7 border-blue-50 border-4${bothPlayersPresent} ? "" : "bg-none bg-gray-100
+              className={`!text-white hover:bg-gray-800 p-7 text-white ${bothPlayersPresent} ? "" : "bg-none bg-gray-100
   border-gray text-gray-400 hover:bg-gray-100"}`}
               joinCode={joinCode}
             />
           </div>
 
-          {/* Status messages */}
           {isTaker && (
             <div className="text-center text-gray-600 mt-12 text-lg">
               Waiting for host to start the game...

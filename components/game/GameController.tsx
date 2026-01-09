@@ -1,6 +1,5 @@
 "use client";
 
-import { useGameEvents } from "@/lib/realtime/useGameEvents";
 import { useEffect, useState } from "react";
 import { GameOver } from "./GameOver";
 import { Scoreboard } from "./Scoreboard";
@@ -9,6 +8,7 @@ import { RoundResult } from "./RoundResult";
 import { MakerPanel } from "./MakerPanel";
 import { TakerPanel } from "./TakerPanel";
 import { TradeHistory } from "./TradeRecord";
+import { useGameChannel } from "@/lib/supabase_realtime/useGameChannel";
 
 interface GameControllerProps {
   joinCode: string;
@@ -70,7 +70,9 @@ export function GameController({
   const [waitingForTaker, setWaitingForTaker] = useState(!!initialQuote);
   const isMyTurn = isMaker ? !waitingForTaker : waitingForTaker;
 
-  const { isConnected, lastEvent } = useGameEvents(joinCode);
+  const channelRole = isMaker ? "maker" : "taker";
+  const displayName = isMaker ? game.makerName : (game.takerName ?? "Unknown");
+  const { isConnected, lastEvent } = useGameChannel(joinCode, currentUserId, channelRole, displayName);
 
   useEffect(() => {
     if (!lastEvent) return;
@@ -143,7 +145,6 @@ export function GameController({
         break;
       }
       case "round-ended": {
-        // Round has ended after 3 turns, need to settle
         setRoundEnded(true);
         break;
       }
@@ -187,7 +188,6 @@ export function GameController({
 
   const handleTradeExecuted = () => {};
 
-  // Called when round ends - settles the round to reveal P&L
   const handleSettle = async () => {
     if (!currentRound) return;
     const res = await fetch(
@@ -202,7 +202,6 @@ export function GameController({
     }
   };
 
-  // Called after seeing round result - advances to next round or ends game
   const handleContinue = async () => {
     if (!currentRound) return;
     const res = await fetch(
