@@ -55,8 +55,6 @@ export async function POST(
       with: { question: true, trades: true },
     });
 
-    let makerTotalPnL = 0;
-    let takerTotalPnL = 0;
 
     const roundResults = allRounds.map((round) => {
       const correctAnswer = Number(round.question.answer);
@@ -115,7 +113,10 @@ export async function POST(
         roundId: result.nextRoundId,
         roundIndex: newRound.roundIndex,
       };
-      broadcastToGame(joinCode, createGameEvent("game-started", continueEventdata));
+      broadcastToGame(
+        joinCode,
+        createGameEvent("game-started", continueEventdata),
+      );
 
       // Also broadcast round-started with question data
       const roundStartedData: RoundStartedData = {
@@ -124,7 +125,10 @@ export async function POST(
         questionPrompt: newRound.question.prompt,
         questionUnit: newRound.question.unit,
       };
-      broadcastToGame(joinCode, createGameEvent("round-started", roundStartedData));
+      broadcastToGame(
+        joinCode,
+        createGameEvent("round-started", roundStartedData),
+      );
     }
   }
 

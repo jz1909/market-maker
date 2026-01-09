@@ -5,7 +5,11 @@ import { eq, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { startRound } from "@/lib/engine/game";
 
-import { createGameEvent, GameStartedData, RoundStartedData } from "@/lib/supabase_realtime/events";
+import {
+  createGameEvent,
+  GameStartedData,
+  RoundStartedData,
+} from "@/lib/supabase_realtime/events";
 import { broadcastToGame } from "@/lib/supabase_realtime/broadcast";
 
 export async function POST(
@@ -118,7 +122,10 @@ export async function POST(
       questionPrompt: randomQuestion.prompt,
       questionUnit: randomQuestion.unit,
     };
-    broadcastToGame(joinCode, createGameEvent("round-started", roundStartedData));
+    broadcastToGame(
+      joinCode,
+      createGameEvent("round-started", roundStartedData),
+    );
   }
 
   return NextResponse.json({

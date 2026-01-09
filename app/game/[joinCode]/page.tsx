@@ -37,7 +37,7 @@ export default async function GamePage({
     redirect("/");
   }
 
-  // Fetch game 
+  // Fetch game
   const game = await db.query.games.findFirst({
     where: eq(games.joinCode, joinCode),
     with: { maker: true, taker: true },
@@ -64,7 +64,7 @@ export default async function GamePage({
 
   // render game page based on status aswell
 
-   if (game.gameStatus === "LOBBY") {
+  if (game.gameStatus === "LOBBY") {
     return (
       <LobbyController
         joinCode={joinCode}
@@ -77,7 +77,7 @@ export default async function GamePage({
         }}
         currentUserId={dbUser.id}
       />
-    )
+    );
   }
 
   // Active or finished
@@ -85,30 +85,32 @@ export default async function GamePage({
   const currentRound = await db.query.rounds.findFirst({
     where: and(
       eq(rounds.gameId, game.id),
-      eq(rounds.roundIndex, game.currentRoundIndex)
+      eq(rounds.roundIndex, game.currentRoundIndex),
     ),
-    with: { question: true }
+    with: { question: true },
   });
 
-    let initialQuote: {bid:number, ask:number} | null = null
-    if (currentRound){
-        const latestQuote = await db.query.quotes.findFirst({
-            where: and(
-                eq(quotes.roundId, currentRound.id),
-                eq(quotes.turnIndex, currentRound.currentTurnIndex)
-            ), orderBy: desc(quotes.createdAt)
-        })
+  let initialQuote: { bid: number; ask: number } | null = null;
+  if (currentRound) {
+    const latestQuote = await db.query.quotes.findFirst({
+      where: and(
+        eq(quotes.roundId, currentRound.id),
+        eq(quotes.turnIndex, currentRound.currentTurnIndex),
+      ),
+      orderBy: desc(quotes.createdAt),
+    });
 
-        if (latestQuote){
-            initialQuote = {
-                bid:Number(latestQuote.bid),
-                ask:Number(latestQuote.ask)
-            }
-        }
+    if (latestQuote) {
+      initialQuote = {
+        bid: Number(latestQuote.bid),
+        ask: Number(latestQuote.ask),
+      };
     }
+  }
 
-    const initialTrades = currentRound
-      ? (await db
+  const initialTrades = currentRound
+    ? (
+        await db
           .select({
             turnIndex: trades.turnIndex,
             side: trades.side,
@@ -116,47 +118,54 @@ export default async function GamePage({
             ask: quotes.ask,
           })
           .from(trades)
-          .leftJoin(quotes, and(
-            eq(trades.roundId, quotes.roundId),
-            eq(trades.turnIndex, quotes.turnIndex)
-          ))
+          .leftJoin(
+            quotes,
+            and(
+              eq(trades.roundId, quotes.roundId),
+              eq(trades.turnIndex, quotes.turnIndex),
+            ),
+          )
           .where(eq(trades.roundId, currentRound.id))
-        ).map((t) => ({
-          turnIndex: t.turnIndex,
-          side: t.side as "BUY" | "SELL" |null,
-          bid: Number(t.bid ?? 0),
-          ask: Number(t.ask ?? 0),
-        }))
-      : [];
+      ).map((t) => ({
+        turnIndex: t.turnIndex,
+        side: t.side as "BUY" | "SELL" | null,
+        bid: Number(t.bid ?? 0),
+        ask: Number(t.ask ?? 0),
+      }))
+    : [];
 
-      const initialRoundData = currentRound?{
-        id:currentRound.id,
+  const initialRoundData = currentRound
+    ? {
+        id: currentRound.id,
         roundIndex: currentRound.roundIndex,
         currentTurnIndex: currentRound.currentTurnIndex,
-        status: currentRound.roundStatus as "PENDING" | "LIVE" | "ENDED"     
-        | "SETTLED",
+        status: currentRound.roundStatus as
+          | "PENDING"
+          | "LIVE"
+          | "ENDED"
+          | "SETTLED",
         questionPrompt: currentRound.question.prompt,
         questionUnit: currentRound.question.unit,
-        questionAnswer: Number(currentRound.question.answer)
-      }: null
+        questionAnswer: Number(currentRound.question.answer),
+      }
+    : null;
 
-      return (
-        <GameController joinCode = {joinCode} game={{
-            id:game.id,
-            status: game.gameStatus as "LOBBY" | "ACTIVE" | "FINISHED",
-            makerUserId: game.makerUserId!,
-            takerUserId: game.takerUserId,
-            makerName: game.maker?.displayName ?? "Unknown",
-            takerName: game.taker?.displayName ?? null,
-            winnerId: game.winnerUserId,
-        }}
-        currentUserId = {dbUser.id}
-        initialRound = {initialRoundData}
-        initialQuote = {initialQuote}
-        initialTrades = {initialTrades} />
-      )
-
-
-
-
+  return (
+    <GameController
+      joinCode={joinCode}
+      game={{
+        id: game.id,
+        status: game.gameStatus as "LOBBY" | "ACTIVE" | "FINISHED",
+        makerUserId: game.makerUserId!,
+        takerUserId: game.takerUserId,
+        makerName: game.maker?.displayName ?? "Unknown",
+        takerName: game.taker?.displayName ?? null,
+        winnerId: game.winnerUserId,
+      }}
+      currentUserId={dbUser.id}
+      initialRound={initialRoundData}
+      initialQuote={initialQuote}
+      initialTrades={initialTrades}
+    />
+  );
 }

@@ -3,7 +3,10 @@ import { db } from "@/lib/db";
 import { users, games } from "@/lib/schema/schema";
 import { eq, and } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import { createGameEvent, PlayerJoinedData } from "@/lib/supabase_realtime/events";
+import {
+  createGameEvent,
+  PlayerJoinedData,
+} from "@/lib/supabase_realtime/events";
 import { broadcastToGame } from "@/lib/supabase_realtime/broadcast";
 
 export async function POST(req: Request) {
@@ -71,7 +74,10 @@ export async function POST(req: Request) {
     takerName: dbUser.displayName ?? "Unknown",
     takerId: dbUser.id,
   };
-  broadcastToGame(game.joinCode, createGameEvent("player-joined", playerJoinedData));
+  broadcastToGame(
+    game.joinCode,
+    createGameEvent("player-joined", playerJoinedData),
+  );
 
   return NextResponse.json({ gameId: game.id, joinCode: game.joinCode });
 }

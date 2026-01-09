@@ -127,6 +127,7 @@ Player Action → API Route → Supabase Broadcast → All Connected Clients
 ```
 
 Example: Taker joins game
+
 1. Taker calls `POST /api/games/join`
 2. API route updates DB, then broadcasts `player-joined` event to `game:{joinCode}` channel
 3. Maker's browser receives event via WebSocket
@@ -143,6 +144,7 @@ Example: Taker joins game
 ### Event Types
 
 All events defined in `lib/realtime/events.ts`:
+
 - `player-joined` - Taker joined the lobby
 - `game-started` - Game transitioned from LOBBY to ACTIVE
 - `round-started` - New round began with question data

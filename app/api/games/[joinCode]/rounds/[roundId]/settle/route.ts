@@ -4,7 +4,10 @@ import { users, games, rounds } from "@/lib/schema/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { settleRound } from "@/lib/engine/game";
-import { createGameEvent, RoundSettledData } from "@/lib/supabase_realtime/events";
+import {
+  createGameEvent,
+  RoundSettledData,
+} from "@/lib/supabase_realtime/events";
 import { broadcastToGame } from "@/lib/supabase_realtime/broadcast";
 
 export async function POST(

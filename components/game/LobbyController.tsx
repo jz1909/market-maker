@@ -1,145 +1,165 @@
-"use client"
+"use client";
 
-  import { useEffect, useState } from "react"
-  import { useRouter } from "next/navigation"
-  import { StartGameButton } from "@/components/StartGameButton"
-  import Link from "next/link"
-import { useGameChannel } from "@/lib/supabase_realtime/useGameChannel"
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { StartGameButton } from "@/components/StartGameButton";
+import Link from "next/link";
+import { useGameChannel } from "@/lib/supabase_realtime/useGameChannel";
 
-  interface LobbyControllerProps {
-    joinCode: string
-    game: {
-      id: string
-      makerUserId: string
-      takerUserId: string | null
-      makerName: string
-      takerName: string | null
-    }
-    currentUserId: string
-  }
+interface LobbyControllerProps {
+  joinCode: string;
+  game: {
+    id: string;
+    makerUserId: string;
+    takerUserId: string | null;
+    makerName: string;
+    takerName: string | null;
+  };
+  currentUserId: string;
+}
 
-  export function LobbyController({
+export function LobbyController({
+  joinCode,
+  game,
+  currentUserId,
+}: LobbyControllerProps) {
+  const router = useRouter();
+
+  const isMaker = game.makerUserId === currentUserId;
+  const isTaker = game.takerUserId === currentUserId;
+
+  const [takerName, setTakerName] = useState(game.takerName);
+  const [takerId, setTakerId] = useState(game.takerUserId);
+
+  const bothPlayersPresent = game.makerUserId && takerId;
+
+  const currentRole = isMaker ? "maker" : "taker";
+  const currentDisplayName = isMaker
+    ? game.makerName
+    : (game.takerName ?? "Unknown");
+  const { isConnected, lastEvent } = useGameChannel(
     joinCode,
-    game,
     currentUserId,
-  }: LobbyControllerProps) {
-    const router = useRouter()
+    currentRole,
+    currentDisplayName,
+  );
 
-    const isMaker = game.makerUserId === currentUserId
-    const isTaker = game.takerUserId === currentUserId
+  useEffect(() => {
+    if (!lastEvent) return;
 
-    const [takerName, setTakerName] = useState(game.takerName)
-    const [takerId, setTakerId] = useState(game.takerUserId)
-
-    const bothPlayersPresent = game.makerUserId && takerId
-
-    const currentRole = isMaker ? "maker" : "taker"
-    const currentDisplayName = isMaker ? game.makerName : (game.takerName ?? "Unknown")
-    const { isConnected, lastEvent } = useGameChannel(joinCode, currentUserId, currentRole, currentDisplayName)
-
-    useEffect(() => {
-      if (!lastEvent) return
-
-      switch (lastEvent.type) {
-        case "player-joined": {
-          const data = lastEvent.data as { takerName: string; takerId: string }
-          setTakerName(data.takerName)
-          setTakerId(data.takerId)
-          break
-        }
-
-        case "player-left": {
-          const data = lastEvent.data as { userId: string }
-          if (data.userId === takerId) {
-            setTakerName(null)
-            setTakerId(null)
-          }
-          break
-        }
-
-        case "player-rejoined": {
-          const data = lastEvent.data as { userId: string; role: string; displayName: string }
-          if (data.role === "taker" && data.userId !== currentUserId) {
-            setTakerId(data.userId)
-            setTakerName(data.displayName)
-          }
-          break
-        }
-
-        case "game-started": {
-          router.refresh()
-          break
-        }
+    switch (lastEvent.type) {
+      case "player-joined": {
+        const data = lastEvent.data as { takerName: string; takerId: string };
+        setTakerName(data.takerName);
+        setTakerId(data.takerId);
+        break;
       }
-    }, [lastEvent, router, takerId])
 
-    return (
-      <div className="min-h-screen p-8">
-        <header className="mb-8">
-          <Link
-            href="/"
-            className="text-white hover:underline bg-blue-500 rounded-2xl      
+      case "player-left": {
+        const data = lastEvent.data as { userId: string };
+        if (data.userId === takerId) {
+          setTakerName(null);
+          setTakerId(null);
+        }
+        break;
+      }
+
+      case "player-rejoined": {
+        const data = lastEvent.data as {
+          userId: string;
+          role: string;
+          displayName: string;
+        };
+        if (data.role === "taker" && data.userId !== currentUserId) {
+          setTakerId(data.userId);
+          setTakerName(data.displayName);
+        }
+        break;
+      }
+
+      case "game-started": {
+        router.refresh();
+        break;
+      }
+    }
+  }, [lastEvent, router, takerId]);
+
+  return (
+    <div className="min-h-screen p-8">
+      <header className="mb-8">
+        <Link
+          href="/"
+          className="text-white hover:underline bg-blue-500 rounded-2xl      
   p-3"
+        >
+          Back to home
+        </Link>
+      </header>
+      <main className="w-fill flex flex-col items-center justify-center">
+        <h1 className="text-3xl font-bold mb-8">Game Lobby</h1>
+
+        <div
+          className="flex flex-col justify-center items-center
+  bg-gray-100 rounded-2xl p-5"
+        >
+          <p className="text-xl">Share this code with your opponent:</p>
+          <p
+            className="text-4xl font-mono tracking-widest
+  mt-3"
           >
-            Back to home
-          </Link>
-        </header>
-        <main className="w-fill flex flex-col items-center justify-center">    
-          <h1 className="text-3xl font-bold mb-8">Game Lobby</h1>
+            {joinCode}
+          </p>
+        </div>
 
-          <div className="flex flex-col justify-center items-center
-  bg-gray-100 rounded-2xl p-5">
-            <p className="text-xl">Share this code with your opponent:</p>     
-            <p className="text-4xl font-mono tracking-widest
-  mt-3">{joinCode}</p>
+        <div className="grid grid-cols-2 gap-10 mb-8 mt-10">
+          <div
+            className={`p-4 rounded-lg border-2 ${
+              isMaker ? "border-blue-500 bg-blue-50" : "border-gray-300"
+            }`}
+          >
+            <p className="text-lg font-bold">Market Maker</p>
+            <p className="text-center">{game.makerName}</p>
+            {isMaker && <div className="text-xs text-center">(You)</div>}
           </div>
 
-          <div className="grid grid-cols-2 gap-10 mb-8 mt-10">
-            <div
-              className={`p-4 rounded-lg border-2 ${isMaker ?
-  "border-blue-500 bg-blue-50" : "border-gray-300"}`}
-            >
-              <p className="text-lg font-bold">Market Maker</p>
-              <p className="text-center">{game.makerName}</p>
-              {isMaker && <div className="text-xs text-center">(You)</div>}    
-            </div>
-
-            <div
-              className={`p-4 rounded-lg border-2 ${isTaker ?
-  "border-blue-500 bg-blue-50" : "border-gray-300"}`}
-            >
-              <p className="text-lg font-bold">Market Taker</p>
-              <p className="text-center">{takerName ?? "Waiting..."}</p>       
-              {isTaker && <div className="text-xs text-center">(You)</div>}    
-            </div>
+          <div
+            className={`p-4 rounded-lg border-2 ${
+              isTaker ? "border-blue-500 bg-blue-50" : "border-gray-300"
+            }`}
+          >
+            <p className="text-lg font-bold">Market Taker</p>
+            <p className="text-center">{takerName ?? "Waiting..."}</p>
+            {isTaker && <div className="text-xs text-center">(You)</div>}
           </div>
+        </div>
 
-          <div>
-            <StartGameButton
-              disabled={!bothPlayersPresent || isTaker}
-              className={`!text-white hover:bg-gray-800 p-7 text-white ${bothPlayersPresent} ? "" : "bg-none bg-gray-100
+        <div>
+          <StartGameButton
+            disabled={!bothPlayersPresent || isTaker}
+            className={`!text-white hover:bg-gray-800 p-7 text-white ${bothPlayersPresent} ? "" : "bg-none bg-gray-100
   border-gray text-gray-400 hover:bg-gray-100"}`}
-              joinCode={joinCode}
-            />
+            joinCode={joinCode}
+          />
+        </div>
+
+        {isTaker && (
+          <div className="text-center text-gray-600 mt-12 text-lg">
+            Waiting for host to start the game...
           </div>
+        )}
 
-          {isTaker && (
-            <div className="text-center text-gray-600 mt-12 text-lg">
-              Waiting for host to start the game...
-            </div>
-          )}
+        {isMaker && !bothPlayersPresent && (
+          <div className="text-center text-gray-600 mt-12 text-lg">
+            Waiting for an opponent to join...
+          </div>
+        )}
 
-          {isMaker && !bothPlayersPresent && (
-            <div className="text-center text-gray-600 mt-12 text-lg">
-              Waiting for an opponent to join...
-            </div>
-          )}
-
-          {!isConnected && (
-            <p className="text-yellow-600 text-sm mt-4">Connecting to
-  server...</p>
-          )}
-        </main>
-      </div>
-    )
-  }
+        {!isConnected && (
+          <p className="text-yellow-600 text-sm mt-4">
+            Connecting to server...
+          </p>
+        )}
+      </main>
+    </div>
+  );
+}

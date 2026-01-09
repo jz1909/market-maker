@@ -72,7 +72,12 @@ export function GameController({
 
   const channelRole = isMaker ? "maker" : "taker";
   const displayName = isMaker ? game.makerName : (game.takerName ?? "Unknown");
-  const { isConnected, lastEvent } = useGameChannel(joinCode, currentUserId, channelRole, displayName);
+  const { isConnected, lastEvent } = useGameChannel(
+    joinCode,
+    currentUserId,
+    channelRole,
+    displayName,
+  );
 
   useEffect(() => {
     if (!lastEvent) return;

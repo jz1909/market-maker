@@ -124,7 +124,10 @@ export async function POST(
         takerPnL: settleResult.takerPnL,
       };
 
-      broadcastToGame(joinCode, createGameEvent("round-settled", roundSettledData));
+      broadcastToGame(
+        joinCode,
+        createGameEvent("round-settled", roundSettledData),
+      );
     }
   }
 
