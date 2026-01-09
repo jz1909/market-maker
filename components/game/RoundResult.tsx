@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { Button } from "../ui/button";
 
 interface RoundResultProps {
@@ -8,7 +9,7 @@ interface RoundResultProps {
   makerPnL: number;
   takerPnL: number;
   currentRole: "MAKER" | "TAKER";
-  onContinue: () => void;
+  onContinue: () => void | Promise<void>;
   isMaker: boolean;
 }
 
@@ -21,6 +22,17 @@ export function RoundResult({
   onContinue,
   isMaker,
 }: RoundResultProps) {
+  const [isLoading, setIsLoading] = useState(false);
+
+  const handleContinue = async () => {
+    setIsLoading(true);
+    try {
+      await onContinue();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const makerWon = makerPnL > takerPnL;
   const takerWon = takerPnL > makerPnL;
 
@@ -90,7 +102,11 @@ export function RoundResult({
       </p>
 
       {isMaker ? (
-        <Button className="p-5 font-bold m-5" onClick={onContinue}>
+        <Button
+          className={`p-5 font-bold m-5 ${isLoading ? "cursor-wait" : ""}`}
+          onClick={handleContinue}
+          disabled={isLoading}
+        >
           {roundIndex < 2 ? "Next Round" : "See final results"}
         </Button>
       ) : (

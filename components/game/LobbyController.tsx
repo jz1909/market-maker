@@ -5,14 +5,15 @@ import { useRouter } from "next/navigation";
 import { StartGameButton } from "@/components/StartGameButton";
 import Link from "next/link";
 import { useGameChannel } from "@/lib/supabase_realtime/useGameChannel";
+import { currentUser } from "@clerk/nextjs/server";
 
 interface LobbyControllerProps {
   joinCode: string;
   game: {
     id: string;
-    makerUserId: string;
+    makerUserId: string | null;
     takerUserId: string | null;
-    makerName: string;
+    makerName: string | null;
     takerName: string | null;
   };
   currentUserId: string;
@@ -30,6 +31,9 @@ export function LobbyController({
 
   const [takerName, setTakerName] = useState(game.takerName);
   const [takerId, setTakerId] = useState(game.takerUserId);
+  const [makerName, setMakerName] = useState(game.makerName)
+  const [makerId, setMakerId] = useState(game.makerUserId)
+  const [makerLeft, setMakerLeft] = useState(false)
 
   const bothPlayersPresent = game.makerUserId && takerId;
 
@@ -61,8 +65,15 @@ export function LobbyController({
           setTakerName(null);
           setTakerId(null);
         }
+
+        else if (data.userId === makerId){
+          setMakerName(null)
+          setMakerId(null)
+          setMakerLeft(true)
+        }
         break;
       }
+
 
       case "player-rejoined": {
         const data = lastEvent.data as {
@@ -73,6 +84,12 @@ export function LobbyController({
         if (data.role === "taker" && data.userId !== currentUserId) {
           setTakerId(data.userId);
           setTakerName(data.displayName);
+        }
+
+        else if (data.role === "maker" && data.userId !== currentUserId){
+          setMakerId(data.userId)
+          setMakerName(data.displayName)
+          setMakerLeft(false)
         }
         break;
       }
@@ -118,7 +135,7 @@ export function LobbyController({
             }`}
           >
             <p className="text-lg font-bold">Market Maker</p>
-            <p className="text-center">{game.makerName}</p>
+            <p className="text-center">{makerName ?? "Waiting..."}</p>
             {isMaker && <div className="text-xs text-center">(You)</div>}
           </div>
 
@@ -136,8 +153,7 @@ export function LobbyController({
         <div>
           <StartGameButton
             disabled={!bothPlayersPresent || isTaker}
-            className={`!text-white hover:bg-gray-800 p-7 text-white ${bothPlayersPresent} ? "" : "bg-none bg-gray-100
-  border-gray text-gray-400 hover:bg-gray-100"}`}
+            className={`!text-white hover:bg-gray-800 p-7 text-white ${bothPlayersPresent? "" : "bg-none bg-gray-100 border-gray text-gray-400 hover:bg-gray-100"}`}
             joinCode={joinCode}
           />
         </div>
@@ -153,6 +169,8 @@ export function LobbyController({
             Waiting for an opponent to join...
           </div>
         )}
+
+        {isTaker && makerLeft && (<div className="text-sm text-red-500">Maker has left the game...</div>)}
 
         {!isConnected && (
           <p className="text-yellow-600 text-sm mt-4">

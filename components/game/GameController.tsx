@@ -51,6 +51,7 @@ export function GameController({
 }: GameControllerProps) {
   const isMaker = game.makerUserId === currentUserId;
   const currentRole = isMaker ? "MAKER" : "TAKER";
+  
 
   const [gameStatus, setGameStatus] = useState(game.status);
   const [winnerId, setWinnerId] = useState(game.winnerId);
@@ -72,12 +73,16 @@ export function GameController({
 
   const channelRole = isMaker ? "maker" : "taker";
   const displayName = isMaker ? game.makerName : (game.takerName ?? "Unknown");
-  const { isConnected, lastEvent } = useGameChannel(
+  const { isConnected, lastEvent, presentUsers } = useGameChannel(
     joinCode,
     currentUserId,
     channelRole,
     displayName,
   );
+
+  const opponentId = isMaker ? game.takerUserId : game.makerUserId
+  const isOpponentOnline = opponentId? presentUsers.includes(opponentId): false
+
 
   useEffect(() => {
     if (!lastEvent) return;
@@ -140,7 +145,7 @@ export function GameController({
         ]);
         setCurrentQuote(null);
         setWaitingForTaker(false);
-        if (currentRound) {
+        if (currentRound && currentRound.currentTurnIndex<=2) {
           setCurrentRound({
             ...currentRound,
             currentTurnIndex: currentRound.currentTurnIndex + 1,
@@ -184,6 +189,13 @@ export function GameController({
         setWinnerId(data.winnerId);
         setMakerWins(data.makerW);
         setTakerWins(data.takerW);
+        break;
+      }
+
+      
+
+      case "player-rejoined" : {
+        const data = lastEvent.data as {userId:string}
         break;
       }
     }
@@ -294,6 +306,11 @@ export function GameController({
             onTradeExecuted={handleTradeExecuted}
           />
         )}
+
+        
+        {!isOpponentOnline && <div className="flex flex-col items-center">
+            <div className="text-red-500 text-sm">Opponent has left the game... Waiting for opponent to reconnect</div>
+        </div>}
 
         <TradeHistory trades={trades} />
       </div>

@@ -42,7 +42,7 @@ export function StartGameButton({
   return (
     <Button
       disabled={disabled || loading}
-      className={cn("px-8 py-3 font-bold rounded-lg", className)}
+      className={cn("px-8 py-3 font-bold rounded-lg", loading && "cursor-wait", className)}
       onClick={handleStart}
     >
       {loading ? "Starting..." : "Start Game"}
