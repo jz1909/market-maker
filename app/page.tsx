@@ -42,7 +42,7 @@ export default async function Home() {
       <main>
         <SignedOut>
           <div className=" min-h-screen flex justify-center items-center bg-gray-500">
-            <div className="w-[40vw] aspect-square rounded-xl border-15 border-gray-200 shadow-2xl  bg-gray-100 flex flex-col justify-between p-6">
+            <div className="w-[40vw] aspect-square rounded-xl border-[15px] border-gray-200 shadow-2xl bg-gray-100 flex flex-col justify-between p-6">
               <div>
                 <h1 className="text-4xl font-bold">Welcome to Market-Maker</h1>
                 <Separator className="my-4 bg-gray-400"/>
@@ -92,7 +92,7 @@ export default async function Home() {
                 {userGames.map((game) => (
                   <li
                     key={game.id}
-                    className="w-[40vw] p-4 border-3 border-gray-500 rounded flex justify-between items-center"
+                    className="w-[40vw] p-4 border-[3px] border-gray-500 rounded flex justify-between items-center"
                   >
                     <span className="font-mono text-sm">{game.joinCode}</span>
                     <span className="ml-4 text-sm text-gray-500">
