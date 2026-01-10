@@ -4,11 +4,8 @@ import { users, games, rounds } from "@/lib/schema/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { settleRound } from "@/lib/engine/game";
-import {
-  createGameEvent,
-  RoundSettledData,
-} from "@/lib/supabase_realtime/events";
-import { broadcastToGame } from "@/lib/supabase_realtime/broadcast";
+
+// Note: Broadcasting is now handled client-side. See GameController.tsx
 
 export async function POST(
   req: Request,
@@ -66,14 +63,7 @@ export async function POST(
     );
   }
 
-  const settleEventData: RoundSettledData = {
-    roundIndex: round.roundIndex,
-    correctAnswer: result.correctAnswer,
-    makerPnL: result.makerPnL,
-    takerPnL: result.takerPnL,
-  };
-
-  await broadcastToGame(joinCode, createGameEvent("round-settled", settleEventData));
+  // Client-side broadcasting handles notifying players
 
   return NextResponse.json({
     success: true,

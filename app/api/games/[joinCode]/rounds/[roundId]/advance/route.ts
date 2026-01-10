@@ -4,13 +4,9 @@ import { users, games, rounds } from "@/lib/schema/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { advanceGame, startRound } from "@/lib/engine/game";
-import {
-  createGameEvent,
-  GameEndedData,
-  RoundStartedData,
-} from "@/lib/supabase_realtime/events";
 import { calculateGameWin, calculateRoundPnL } from "@/lib/engine/scoring";
-import { broadcastToGame } from "@/lib/supabase_realtime/broadcast";
+
+// Note: Broadcasting is now handled client-side. See GameController.tsx
 
 export async function POST(
   req: Request,
@@ -79,13 +75,7 @@ export async function POST(
         .where(eq(games.id, game.id));
     }
 
-    const winEventData: GameEndedData = {
-      winnerId,
-      makerW,
-      takerW,
-    };
-
-    await broadcastToGame(joinCode, createGameEvent("game-ended", winEventData));
+    // Client-side broadcasting handles notifying players
 
     return NextResponse.json({
       success: true,
@@ -106,19 +96,7 @@ export async function POST(
       with: { question: true },
     });
 
-    if (newRound) {
-      // Only broadcast round-started - it contains all needed data
-      const roundStartedData: RoundStartedData = {
-        roundId: result.nextRoundId,
-        roundIndex: newRound.roundIndex,
-        questionPrompt: newRound.question.prompt,
-        questionUnit: newRound.question.unit,
-      };
-      await broadcastToGame(
-        joinCode,
-        createGameEvent("round-started", roundStartedData),
-      );
-    }
+    // Client-side broadcasting handles notifying players
   }
 
   // Fetch the new round data for the response

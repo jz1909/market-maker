@@ -3,11 +3,8 @@ import { db } from "@/lib/db";
 import { users, games } from "@/lib/schema/schema";
 import { eq, and } from "drizzle-orm";
 import { NextResponse } from "next/server";
-import {
-  createGameEvent,
-  PlayerJoinedData,
-} from "@/lib/supabase_realtime/events";
-import { broadcastToGame } from "@/lib/supabase_realtime/broadcast";
+
+// Note: Broadcasting is now handled client-side. See LobbyController.tsx
 
 export async function POST(req: Request) {
   const { userId: clerkUserId } = await auth();
@@ -69,15 +66,12 @@ export async function POST(req: Request) {
     .set({ takerUserId: dbUser.id })
     .where(eq(games.id, game.id));
 
-  // Broadcast to maker that taker has joined
-  const playerJoinedData: PlayerJoinedData = {
+  // Client-side broadcasting handles notifying the maker
+
+  return NextResponse.json({
+    gameId: game.id,
+    joinCode: game.joinCode,
     takerName: dbUser.displayName ?? "Unknown",
     takerId: dbUser.id,
-  };
-  await broadcastToGame(
-    game.joinCode,
-    createGameEvent("player-joined", playerJoinedData),
-  );
-
-  return NextResponse.json({ gameId: game.id, joinCode: game.joinCode });
+  });
 }

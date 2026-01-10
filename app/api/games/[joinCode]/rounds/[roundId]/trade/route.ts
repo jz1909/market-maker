@@ -5,13 +5,6 @@ import { eq, and } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { executeTrade, settleRound } from "@/lib/engine/game";
 import { getTradePrice } from "@/lib/engine/scoring";
-import {
-  createGameEvent,
-  TradeExecutedData,
-  RoundSettledData,
-} from "@/lib/supabase_realtime/events";
-import { DEFAULT_GAME_CONFIG } from "@/lib/engine/types";
-import { broadcastToGame } from "@/lib/supabase_realtime/broadcast";
 
 export async function POST(
   req: Request,
@@ -100,13 +93,6 @@ export async function POST(
     price,
   );
 
-  const tradeEventData: TradeExecutedData = {
-    turnIndex: turnIndexBeforeTrade,
-    side,
-  };
-
-  await broadcastToGame(joinCode, createGameEvent("trade-executed", tradeEventData));
-
   // check if round ended, auto-settle if so
   const updatedRound = await db.query.rounds.findFirst({
     where: eq(rounds.id, roundId),
@@ -114,22 +100,10 @@ export async function POST(
 
   if (updatedRound?.roundStatus === "ENDED") {
     // Auto-settle the round
-    const settleResult = await settleRound(roundId);
-
-    if (settleResult) {
-      const roundSettledData: RoundSettledData = {
-        roundIndex: round.roundIndex,
-        correctAnswer: settleResult.correctAnswer,
-        makerPnL: settleResult.makerPnL,
-        takerPnL: settleResult.takerPnL,
-      };
-
-      await broadcastToGame(
-        joinCode,
-        createGameEvent("round-settled", roundSettledData),
-      );
-    }
+    await settleRound(roundId);
   }
+
+  // Client-side broadcasting handles notifying the maker
 
   return NextResponse.json({
     success: true,

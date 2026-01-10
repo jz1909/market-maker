@@ -91,7 +91,8 @@ export function LobbyController({
       }
 
       case "game-started": {
-        router.refresh();
+        // Force a full page reload to get fresh server data
+        window.location.reload();
         break;
       }
     }

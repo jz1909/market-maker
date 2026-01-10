@@ -5,11 +5,6 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { submitQuote } from "@/lib/engine/game";
 import { isValidQuote } from "@/lib/engine/scoring";
-import {
-  createGameEvent,
-  QuoteSubmittedData,
-} from "@/lib/supabase_realtime/events";
-import { broadcastToGame } from "@/lib/supabase_realtime/broadcast";
 
 export async function POST(
   req: Request,
@@ -77,13 +72,7 @@ export async function POST(
 
   await submitQuote(roundId, round.currentTurnIndex, dbUser.id, bid, ask);
 
-  const eventData: QuoteSubmittedData = {
-    turnIndex: round.currentTurnIndex,
-    bid,
-    ask,
-  };
-
-  await broadcastToGame(joinCode, createGameEvent("quote-submitted", eventData));
+  // Client-side broadcasting handles notifying the taker
 
   return NextResponse.json({
     success: true,

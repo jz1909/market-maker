@@ -5,13 +5,6 @@ import { eq, sql } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { startRound } from "@/lib/engine/game";
 
-import {
-  createGameEvent,
-  GameStartedData,
-  RoundStartedData,
-} from "@/lib/supabase_realtime/events";
-import { broadcastToGame } from "@/lib/supabase_realtime/broadcast";
-
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ joinCode: string }> },
@@ -107,26 +100,7 @@ export async function POST(
     })
     .where(eq(games.id, game.id));
 
-  // Broadcast game-started so taker's lobby refreshes
-  if (newRound) {
-    const gameStartedData: GameStartedData = {
-      roundId: newRound.id,
-      roundIndex: 0,
-    };
-    await broadcastToGame(joinCode, createGameEvent("game-started", gameStartedData));
-
-    // Also broadcast round-started with question data
-    const roundStartedData: RoundStartedData = {
-      roundId: newRound.id,
-      roundIndex: 0,
-      questionPrompt: randomQuestion.prompt,
-      questionUnit: randomQuestion.unit,
-    };
-    await broadcastToGame(
-      joinCode,
-      createGameEvent("round-started", roundStartedData),
-    );
-  }
+  // Client-side broadcasting handles notifying the taker
 
   return NextResponse.json({
     success: true,
