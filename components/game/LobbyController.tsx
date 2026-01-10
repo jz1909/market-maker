@@ -1,11 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { StartGameButton } from "@/components/StartGameButton";
 import Link from "next/link";
 import { useGameChannel } from "@/lib/supabase_realtime/useGameChannel";
-import { currentUser } from "@clerk/nextjs/server";
 import { ReturnHomeButton } from "../ReturnHomeButton";
 
 interface LobbyControllerProps {
@@ -35,6 +34,7 @@ export function LobbyController({
   const [makerName, setMakerName] = useState(game.makerName);
   const [makerId, setMakerId] = useState(game.makerUserId);
   const [makerLeft, setMakerLeft] = useState(false);
+  const isNavigatingRef = useRef(false);
 
   const bothPlayersPresent = game.makerUserId && takerId;
 
@@ -51,6 +51,8 @@ export function LobbyController({
 
   useEffect(() => {
     if (!lastEvent) return;
+    // Don't process events if we're already navigating
+    if (isNavigatingRef.current) return;
 
     switch (lastEvent.type) {
       case "player-joined": {
@@ -90,13 +92,19 @@ export function LobbyController({
         break;
       }
 
-      case "game-started": {
-        // Force a full page reload to get fresh server data
-        window.location.reload();
+      case "game-started":
+      case "round-started": {
+        // Mark that we're navigating to prevent re-processing
+        isNavigatingRef.current = true;
+        console.log("Game started - navigating to game page");
+        // Hard navigation with cache-busting param to force fresh server render
+        const url = new URL(window.location.href);
+        url.searchParams.set("t", Date.now().toString());
+        window.location.replace(url.toString());
         break;
       }
     }
-  }, [lastEvent, router, takerId]);
+  }, [lastEvent, router, takerId, makerId, currentUserId]);
 
   return (
     <div className="min-h-screen p-8">
