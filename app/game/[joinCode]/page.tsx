@@ -16,6 +16,9 @@ import { GameOver } from "@/components/game/GameOver";
 import { GameController } from "@/components/game/GameController";
 import { LobbyController } from "@/components/game/LobbyController";
 
+// Force dynamic rendering - game state changes frequently
+export const dynamic = "force-dynamic";
+
 export default async function GamePage({
   params,
 }: {
