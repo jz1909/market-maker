@@ -51,7 +51,6 @@ export function LobbyController({
 
   useEffect(() => {
     if (!lastEvent) return;
-    // Don't process events if we're already navigating
     if (isNavigatingRef.current) return;
 
     switch (lastEvent.type) {
@@ -94,10 +93,10 @@ export function LobbyController({
 
       case "game-started":
       case "round-started": {
-        // Mark that we're navigating to prevent re-processing
+        // needa prevent reprocessing here
         isNavigatingRef.current = true;
         console.log("Game started - navigating to game page");
-        // Hard navigation with cache-busting param to force fresh server render
+        //  force cache refresh with a timestamp
         const url = new URL(window.location.href);
         url.searchParams.set("t", Date.now().toString());
         window.location.replace(url.toString());

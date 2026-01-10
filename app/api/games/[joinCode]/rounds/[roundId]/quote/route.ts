@@ -72,8 +72,6 @@ export async function POST(
 
   await submitQuote(roundId, round.currentTurnIndex, dbUser.id, bid, ask);
 
-  // Client-side broadcasting handles notifying the taker
-
   return NextResponse.json({
     success: true,
     turnIndex: round.currentTurnIndex,

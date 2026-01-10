@@ -5,8 +5,6 @@ import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
 import { startRound } from "@/lib/engine/game";
 
-// Note: Broadcasting is now handled client-side. See GameController.tsx
-
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ joinCode: string; roundId: string }> },
@@ -61,8 +59,6 @@ export async function POST(
   }
 
   await startRound(roundId);
-
-  // Client-side broadcasting handles notifying players
 
   return NextResponse.json({ success: true });
 }

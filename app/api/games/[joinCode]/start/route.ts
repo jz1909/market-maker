@@ -11,15 +11,11 @@ export async function POST(
 ) {
   const { joinCode } = await params;
 
-  // Check auth
-
   const { userId: clerkUserId } = await auth();
 
   if (!clerkUserId) {
     return NextResponse.json({ error: "Not authorized" }, { status: 401 });
   }
-
-  // Get UUID
 
   const dbUser = await db.query.users.findFirst({
     where: eq(users.clerkUserId, clerkUserId),
@@ -31,8 +27,6 @@ export async function POST(
       { status: 404 },
     );
   }
-
-  // fetch game
 
   const game = await db.query.games.findFirst({
     where: eq(games.joinCode, joinCode),
@@ -49,7 +43,6 @@ export async function POST(
     );
   }
 
-  // check lobby
   if (game.gameStatus !== "LOBBY") {
     return NextResponse.json(
       { error: "Game is not in a status that can start" },
@@ -87,7 +80,6 @@ export async function POST(
     })
     .returning();
 
-  // Set round to LIVE so maker can submit quotes
   if (newRound) {
     await startRound(newRound.id);
   }
@@ -99,8 +91,6 @@ export async function POST(
       startedAt: new Date(),
     })
     .where(eq(games.id, game.id));
-
-  // Client-side broadcasting handles notifying the taker
 
   return NextResponse.json({
     success: true,

@@ -11,7 +11,6 @@ import { TradeHistory } from "./TradeRecord";
 import { useGameChannel } from "@/lib/supabase_realtime/useGameChannel";
 import { Navbar } from "../Navbar";
 
-
 interface GameControllerProps {
   joinCode: string;
   game: {
@@ -202,11 +201,10 @@ export function GameController({
   }, [lastEvent]);
 
   const handleQuoteSubmitted = async (bid: number, ask: number) => {
-    // Update maker's UI directly after successful quote submission
+    // locally update the ui and then broadcast
     setCurrentQuote({ bid, ask });
     setWaitingForTaker(true);
 
-    // Broadcast to taker
     await broadcast("quote-submitted", {
       bid,
       ask,
@@ -218,7 +216,6 @@ export function GameController({
     side: "BUY" | "SELL" | null,
     roundEnded: boolean,
   ) => {
-    // Update taker's UI directly after successful trade
     if (currentQuote && currentRound) {
       setTrades((prev) => [
         ...prev,
@@ -231,7 +228,6 @@ export function GameController({
       ]);
       setCurrentQuote(null);
 
-      // Broadcast to maker
       await broadcast("trade-executed", {
         side,
         turnIndex: currentRound.currentTurnIndex,
@@ -244,10 +240,8 @@ export function GameController({
           currentTurnIndex: currentRound.currentTurnIndex + 1,
         });
       }
-      // If roundEnded, the API will have settled the round
-      // We need to fetch the settlement data
+
       if (roundEnded) {
-        // Fetch settlement data and broadcast
         const res = await fetch(
           `/api/games/${joinCode}/rounds/${currentRound.id}/settlement`,
         );
@@ -259,7 +253,6 @@ export function GameController({
             makerPnL: data.makerPnL,
             takerPnL: data.takerPnL,
           });
-          // Also update taker's own UI
           setRoundResult({
             correctAnswer: data.correctAnswer,
             makerPnL: data.makerPnL,
@@ -311,14 +304,12 @@ export function GameController({
       setMakerWins(data.makerW);
       setTakerWins(data.takerW);
 
-      // Broadcast game ended to taker
       await broadcast("game-ended", {
         winnerId: data.winnerId,
         makerW: data.makerW,
         takerW: data.takerW,
       });
     } else if (data.nextRound) {
-      // Update maker's UI directly from response
       setCurrentRound({
         id: data.nextRound.id,
         roundIndex: data.nextRound.roundIndex,
@@ -333,7 +324,6 @@ export function GameController({
       setRoundResult(null);
       setWaitingForTaker(false);
 
-      // Broadcast round started to taker
       await broadcast("round-started", {
         roundId: data.nextRound.id,
         roundIndex: data.nextRound.roundIndex,
@@ -384,8 +374,7 @@ export function GameController({
   if (gameStatus === "ACTIVE" && currentRound) {
     return (
       <div>
-
-        <Navbar/>
+        <Navbar />
 
         <Scoreboard
           makerName={game.makerName}

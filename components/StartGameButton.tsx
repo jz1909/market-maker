@@ -9,7 +9,11 @@ interface StartGameButtonProps {
   joinCode: string;
   className?: string;
   disabled?: boolean;
-  onGameStarted?: (roundId: string, questionPrompt: string, questionUnit: string | null) => void;
+  onGameStarted?: (
+    roundId: string,
+    questionPrompt: string,
+    questionUnit: string | null,
+  ) => void;
 }
 
 export function StartGameButton({
@@ -35,7 +39,6 @@ export function StartGameButton({
         return;
       }
 
-      // Notify parent to broadcast
       if (onGameStarted && data.roundId) {
         onGameStarted(data.roundId, data.questionPrompt, data.questionUnit);
       }

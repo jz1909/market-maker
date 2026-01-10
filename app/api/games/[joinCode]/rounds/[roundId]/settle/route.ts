@@ -63,8 +63,6 @@ export async function POST(
     );
   }
 
-  // Client-side broadcasting handles notifying players
-
   return NextResponse.json({
     success: true,
     correctAnswer: result.correctAnswer,

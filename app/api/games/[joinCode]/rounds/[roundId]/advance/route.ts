@@ -75,8 +75,6 @@ export async function POST(
         .where(eq(games.id, game.id));
     }
 
-    // Client-side broadcasting handles notifying players
-
     return NextResponse.json({
       success: true,
       gameEnded: true,
@@ -86,20 +84,15 @@ export async function POST(
     });
   }
 
-  // Set new round to LIVE and fetch question data
   if (result.nextRoundId) {
     await startRound(result.nextRoundId);
 
-    // Fetch the new round with question data for broadcast
     const newRound = await db.query.rounds.findFirst({
       where: eq(rounds.id, result.nextRoundId),
       with: { question: true },
     });
-
-    // Client-side broadcasting handles notifying players
   }
 
-  // Fetch the new round data for the response
   const newRoundData = result.nextRoundId
     ? await db.query.rounds.findFirst({
         where: eq(rounds.id, result.nextRoundId),

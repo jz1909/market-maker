@@ -42,26 +42,29 @@ export default async function Home() {
       <main>
         <SignedOut>
           <div className="flex flex-col min-h-screen flex justify-center items-start bg-linear-to-r from-blue-500 to-green-500 p-20">
-              <div>
-                <h1 className="text-5xl font-bold text-white">Welcome to Market-Maker</h1>
-                <Separator className="my-4 bg-white"/>
-              </div>
-              <div className="text-2xl text-white">
-                Market-Maker is a hybrid game that combines the elements of quiz
-                bowl and market-making. Market-maker is a real-time multiplayer
-                trading game that allows you to be the maker or taker of a
-                contract in the form of a trivia question. It includes over
-                thousands of questions and more are constantly being added.
-              </div>
-              <div className="text-2xl mt-5 text-white">
-                If you have any particular questions, feel free to reach out to
-                jsh27335@gmail.com for any help.
-              </div>
-              <SignInButton>
-                <Button className="bg-none bg-white opacity-30 font-bold mt-5 text-black hover:opacity-20 transition-opacity p-5">Sign In</Button>
-              </SignInButton>
+            <div>
+              <h1 className="text-5xl font-bold text-white">
+                Welcome to Market-Maker
+              </h1>
+              <Separator className="my-4 bg-white" />
+            </div>
+            <div className="text-2xl text-white">
+              Market-Maker is a hybrid game that combines the elements of quiz
+              bowl and market-making. Market-maker is a real-time multiplayer
+              trading game that allows you to be the maker or taker of a
+              contract in the form of a trivia question. It includes over
+              thousands of questions and more are constantly being added.
+            </div>
+            <div className="text-2xl mt-5 text-white">
+              If you have any particular questions, feel free to reach out to
+              jsh27335@gmail.com for any help.
+            </div>
+            <SignInButton>
+              <Button className="bg-none bg-white opacity-30 font-bold mt-5 text-black hover:opacity-20 transition-opacity p-5">
+                Sign In
+              </Button>
+            </SignInButton>
           </div>
-          
         </SignedOut>
         <SignedIn>
           <NavbarHome />
@@ -81,7 +84,9 @@ export default async function Home() {
           </div>
 
           <section className="mb-200">
-            <h2 className="text-4xl font-semibold mb-10 w-full text-center">Previous games</h2>
+            <h2 className="text-4xl font-semibold mb-10 w-full text-center">
+              Previous games
+            </h2>
             {userGames.length === 0 ? (
               <p className="text-xl text-gray-500">
                 No games yet. Create or join one to start!
