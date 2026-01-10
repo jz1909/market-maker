@@ -8,7 +8,7 @@ interface MakerPanelProps {
   roundId: string;
   currentTurn: number;
   isMyTurn: boolean;
-  onQuoteSubmitted: () => void;
+  onQuoteSubmitted: (bid: number, ask: number) => void;
 }
 
 export function MakerPanel({
@@ -65,7 +65,7 @@ export function MakerPanel({
 
       setBid("");
       setAsk("");
-      onQuoteSubmitted?.();
+      onQuoteSubmitted(bidNum, askNum);
     } catch (err) {
       setError("Something went wrong");
     } finally {

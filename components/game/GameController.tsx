@@ -201,9 +201,36 @@ export function GameController({
     }
   }, [lastEvent]);
 
-  const handleQuoteSubmitted = () => {};
+  const handleQuoteSubmitted = (bid: number, ask: number) => {
+    // Update maker's UI directly after successful quote submission
+    setCurrentQuote({ bid, ask });
+    setWaitingForTaker(true);
+  };
 
-  const handleTradeExecuted = () => {};
+  const handleTradeExecuted = (side: "BUY" | "SELL" | null, roundEnded: boolean) => {
+    // Update taker's UI directly after successful trade
+    if (currentQuote && currentRound) {
+      setTrades((prev) => [
+        ...prev,
+        {
+          turnIndex: currentRound.currentTurnIndex,
+          bid: currentQuote.bid,
+          ask: currentQuote.ask,
+          side,
+        },
+      ]);
+      setCurrentQuote(null);
+
+      if (!roundEnded && currentRound.currentTurnIndex < 2) {
+        setWaitingForTaker(false);
+        setCurrentRound({
+          ...currentRound,
+          currentTurnIndex: currentRound.currentTurnIndex + 1,
+        });
+      }
+      // If roundEnded, wait for round-settled event to show results
+    }
+  };
 
   const handleSettle = async () => {
     if (!currentRound) return;

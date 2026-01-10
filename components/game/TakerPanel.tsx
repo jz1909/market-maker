@@ -9,7 +9,7 @@ interface TakerPanelProps {
   currentTurn: number;
   currentQuote: { bid: number; ask: number } | null;
   isMyTurn: boolean;
-  onTradeExecuted: () => void;
+  onTradeExecuted: (side: "BUY" | "SELL" | null, roundEnded: boolean) => void;
 }
 
 export function TakerPanel({
@@ -44,7 +44,7 @@ export function TakerPanel({
         return;
       }
 
-      onTradeExecuted?.();
+      onTradeExecuted(side, data.roundEnded);
     } catch (err) {
       setError("Something went wrong here");
     } finally {
