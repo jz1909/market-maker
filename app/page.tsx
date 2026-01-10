@@ -41,34 +41,33 @@ export default async function Home() {
     <div className="min-h-screen ">
       <main>
         <SignedOut>
-          <div className=" min-h-screen flex justify-center items-center bg-gray-500">
-            <div className="w-[40vw] aspect-square rounded-xl border-15 border-gray-200 shadow-2xl bg-gray-100 flex flex-col justify-between p-6 m-10">
+          <div className="flex flex-col min-h-screen flex justify-center items-start bg-linear-to-r from-blue-500 to-green-500 p-20">
               <div>
-                <h1 className="text-3xl font-bold">Welcome to Market-Maker</h1>
-                <Separator className="my-4 bg-gray-400"/>
+                <h1 className="text-5xl font-bold text-white">Welcome to Market-Maker</h1>
+                <Separator className="my-4 bg-white"/>
               </div>
-              <div className="text-2xl">
+              <div className="text-2xl text-white">
                 Market-Maker is a hybrid game that combines the elements of quiz
                 bowl and market-making. Market-maker is a real-time multiplayer
                 trading game that allows you to be the maker or taker of a
                 contract in the form of a trivia question. It includes over
                 thousands of questions and more are constantly being added.
               </div>
-              <div className="text-2xl">
+              <div className="text-2xl mt-5 text-white">
                 If you have any particular questions, feel free to reach out to
                 jsh27335@gmail.com for any help.
               </div>
               <SignInButton>
-                <Button className="bg-blue-500 font-bold mt-2">Sign In</Button>
+                <Button className="bg-none bg-white opacity-30 font-bold mt-5 text-black hover:opacity-20 transition-opacity p-5">Sign In</Button>
               </SignInButton>
-            </div>
           </div>
+          
         </SignedOut>
         <SignedIn>
           <NavbarHome />
 
-          <div className="flex flex-col items-center gap-4 mb-1 p-10  ">
-            <div className="flex flex-col bg-gray-100 outline-8 outline-blue-300 shadow-2xl shadow-blue-200 justify-center w-[50vw] h-[50vh] -translate-y-25 items-center gap-20  p-25 rounded-lg">
+          <div className="flex flex-col items-center gap-4   ">
+            <div className="flex flex-col bg-gray-100 outline-8 outline-blue-300 shadow-2xl shadow-blue-200 justify-center w-[50vw] h-[40vh] -translate-y-10 items-center gap-8  p-25 rounded-lg">
               <div className="flex items-center justify-center w-full">
                 <CreateGameButton />
               </div>

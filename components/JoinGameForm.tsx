@@ -45,7 +45,7 @@ export function JoinGameForm() {
         value={code}
         onChange={(e) => setCode(e.target.value)}
         placeholder="Enter Join Code"
-        className="px-3 py-2 bg-blue-500 rounded-lg w-[20vw] text-white"
+        className="px-3 py-2 bg-blue-300 rounded-lg w-[20vw] text-white"
         maxLength={6}
       />
       <Button className="font-bold" onClick={handleJoin} disabled={loading}>
