@@ -42,7 +42,7 @@ export function LobbyController({
   const currentDisplayName = isMaker
     ? game.makerName
     : (game.takerName ?? "Unknown");
-  const { isConnected, lastEvent } = useGameChannel(
+  const { isConnected, lastEvent, broadcast } = useGameChannel(
     joinCode,
     currentUserId,
     currentRole,
@@ -143,6 +143,15 @@ export function LobbyController({
             disabled={!bothPlayersPresent || isTaker}
             className={`!text-white hover:bg-gray-800 p-7 text-white ${bothPlayersPresent ? "" : "bg-none bg-gray-100 border-gray text-gray-400 hover:bg-gray-100"}`}
             joinCode={joinCode}
+            onGameStarted={async (roundId, questionPrompt, questionUnit) => {
+              await broadcast("game-started", { roundId, roundIndex: 0 });
+              await broadcast("round-started", {
+                roundId,
+                roundIndex: 0,
+                questionPrompt,
+                questionUnit,
+              });
+            }}
           />
         </div>
 

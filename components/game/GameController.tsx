@@ -74,7 +74,7 @@ export function GameController({
 
   const channelRole = isMaker ? "maker" : "taker";
   const displayName = isMaker ? game.makerName : (game.takerName ?? "Unknown");
-  const { isConnected, lastEvent, presentUsers } = useGameChannel(
+  const { isConnected, lastEvent, presentUsers, broadcast } = useGameChannel(
     joinCode,
     currentUserId,
     channelRole,
@@ -201,13 +201,23 @@ export function GameController({
     }
   }, [lastEvent]);
 
-  const handleQuoteSubmitted = (bid: number, ask: number) => {
+  const handleQuoteSubmitted = async (bid: number, ask: number) => {
     // Update maker's UI directly after successful quote submission
     setCurrentQuote({ bid, ask });
     setWaitingForTaker(true);
+
+    // Broadcast to taker
+    await broadcast("quote-submitted", {
+      bid,
+      ask,
+      turnIndex: currentRound?.currentTurnIndex ?? 0,
+    });
   };
 
-  const handleTradeExecuted = (side: "BUY" | "SELL" | null, roundEnded: boolean) => {
+  const handleTradeExecuted = async (
+    side: "BUY" | "SELL" | null,
+    roundEnded: boolean,
+  ) => {
     // Update taker's UI directly after successful trade
     if (currentQuote && currentRound) {
       setTrades((prev) => [
@@ -221,6 +231,12 @@ export function GameController({
       ]);
       setCurrentQuote(null);
 
+      // Broadcast to maker
+      await broadcast("trade-executed", {
+        side,
+        turnIndex: currentRound.currentTurnIndex,
+      });
+
       if (!roundEnded && currentRound.currentTurnIndex < 2) {
         setWaitingForTaker(false);
         setCurrentRound({
@@ -228,7 +244,34 @@ export function GameController({
           currentTurnIndex: currentRound.currentTurnIndex + 1,
         });
       }
-      // If roundEnded, wait for round-settled event to show results
+      // If roundEnded, the API will have settled the round
+      // We need to fetch the settlement data
+      if (roundEnded) {
+        // Fetch settlement data and broadcast
+        const res = await fetch(
+          `/api/games/${joinCode}/rounds/${currentRound.id}/settlement`,
+        );
+        if (res.ok) {
+          const data = await res.json();
+          await broadcast("round-settled", {
+            roundIndex: currentRound.roundIndex,
+            correctAnswer: data.correctAnswer,
+            makerPnL: data.makerPnL,
+            takerPnL: data.takerPnL,
+          });
+          // Also update taker's own UI
+          setRoundResult({
+            correctAnswer: data.correctAnswer,
+            makerPnL: data.makerPnL,
+            takerPnL: data.takerPnL,
+          });
+          if (data.makerPnL > data.takerPnL) {
+            setMakerWins((prev) => prev + 1);
+          } else if (data.takerPnL > data.makerPnL) {
+            setTakerWins((prev) => prev + 1);
+          }
+        }
+      }
     }
   };
 
@@ -267,6 +310,13 @@ export function GameController({
       setWinnerId(data.winnerId);
       setMakerWins(data.makerW);
       setTakerWins(data.takerW);
+
+      // Broadcast game ended to taker
+      await broadcast("game-ended", {
+        winnerId: data.winnerId,
+        makerW: data.makerW,
+        takerW: data.takerW,
+      });
     } else if (data.nextRound) {
       // Update maker's UI directly from response
       setCurrentRound({
@@ -282,6 +332,14 @@ export function GameController({
       setTrades([]);
       setRoundResult(null);
       setWaitingForTaker(false);
+
+      // Broadcast round started to taker
+      await broadcast("round-started", {
+        roundId: data.nextRound.id,
+        roundIndex: data.nextRound.roundIndex,
+        questionPrompt: data.nextRound.questionPrompt,
+        questionUnit: data.nextRound.questionUnit,
+      });
     }
   };
 

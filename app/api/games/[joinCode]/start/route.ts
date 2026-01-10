@@ -132,5 +132,7 @@ export async function POST(
     success: true,
     gameId: game.id,
     roundId: newRound?.id,
+    questionPrompt: randomQuestion.prompt,
+    questionUnit: randomQuestion.unit,
   });
 }

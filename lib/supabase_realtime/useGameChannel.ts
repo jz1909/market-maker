@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { supabase } from "../supabase/client";
-import { GameEvent } from "./events";
+import { RealtimeChannel } from "@supabase/supabase-js";
+import { GameEvent, createGameEvent, GameEventType } from "./events";
 
 interface PresenceData {
   userId: string;
@@ -21,7 +22,7 @@ export function useGameChannel(
   const [lastEvent, setLastEvent] = useState<GameEvent | null>(null);
   const [presentUsers, setPresentUsers] = useState<string[]>([]);
   const previousUsersRef = useRef<string[]>([]);
-  const isFirstSyncRef = useRef(true);
+  const channelRef = useRef<RealtimeChannel | null>(null);
 
   useEffect(() => {
     const channel = supabase.channel(`game:${joinCode}`, {
@@ -31,6 +32,8 @@ export function useGameChannel(
         },
       },
     });
+
+    channelRef.current = channel;
 
     channel.on("broadcast", { event: "game-event" }, (payload) => {
       console.log("Received broadcast event:", payload.payload);
@@ -101,9 +104,26 @@ export function useGameChannel(
     });
 
     return () => {
+      channelRef.current = null;
       supabase.removeChannel(channel);
     };
   }, [joinCode, userId, role, displayName]);
 
-  return { isConnected, lastEvent, presentUsers };
+  const broadcast = useCallback(
+    async (eventType: GameEventType, data: Record<string, unknown>) => {
+      if (!channelRef.current || !isConnected) {
+        console.warn("Cannot broadcast - channel not connected");
+        return;
+      }
+
+      await channelRef.current.send({
+        type: "broadcast",
+        event: "game-event",
+        payload: createGameEvent(eventType, data),
+      });
+    },
+    [isConnected],
+  );
+
+  return { isConnected, lastEvent, presentUsers, broadcast };
 }

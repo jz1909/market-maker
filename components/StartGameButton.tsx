@@ -5,15 +5,19 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
+interface StartGameButtonProps {
+  joinCode: string;
+  className?: string;
+  disabled?: boolean;
+  onGameStarted?: (roundId: string, questionPrompt: string, questionUnit: string | null) => void;
+}
+
 export function StartGameButton({
   joinCode,
   className,
   disabled,
-}: {
-  joinCode: string;
-  className?: string;
-  disabled?: boolean;
-}) {
+  onGameStarted,
+}: StartGameButtonProps) {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
 
@@ -29,6 +33,11 @@ export function StartGameButton({
       if (!res.ok) {
         alert(data.error || "Failed to start game");
         return;
+      }
+
+      // Notify parent to broadcast
+      if (onGameStarted && data.roundId) {
+        onGameStarted(data.roundId, data.questionPrompt, data.questionUnit);
       }
 
       router.refresh();
