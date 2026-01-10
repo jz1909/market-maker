@@ -74,7 +74,7 @@ export async function POST(req: Request) {
     takerName: dbUser.displayName ?? "Unknown",
     takerId: dbUser.id,
   };
-  broadcastToGame(
+  await broadcastToGame(
     game.joinCode,
     createGameEvent("player-joined", playerJoinedData),
   );

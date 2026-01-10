@@ -83,7 +83,7 @@ export async function POST(
     ask,
   };
 
-  broadcastToGame(joinCode, createGameEvent("quote-submitted", eventData));
+  await broadcastToGame(joinCode, createGameEvent("quote-submitted", eventData));
 
   return NextResponse.json({
     success: true,

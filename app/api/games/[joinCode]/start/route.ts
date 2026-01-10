@@ -113,7 +113,7 @@ export async function POST(
       roundId: newRound.id,
       roundIndex: 0,
     };
-    broadcastToGame(joinCode, createGameEvent("game-started", gameStartedData));
+    await broadcastToGame(joinCode, createGameEvent("game-started", gameStartedData));
 
     // Also broadcast round-started with question data
     const roundStartedData: RoundStartedData = {
@@ -122,7 +122,7 @@ export async function POST(
       questionPrompt: randomQuestion.prompt,
       questionUnit: randomQuestion.unit,
     };
-    broadcastToGame(
+    await broadcastToGame(
       joinCode,
       createGameEvent("round-started", roundStartedData),
     );

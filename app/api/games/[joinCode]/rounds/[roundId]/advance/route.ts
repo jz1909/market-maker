@@ -6,7 +6,6 @@ import { NextResponse } from "next/server";
 import { advanceGame, startRound } from "@/lib/engine/game";
 import {
   createGameEvent,
-  GameStartedData,
   GameEndedData,
   RoundStartedData,
 } from "@/lib/supabase_realtime/events";
@@ -86,7 +85,7 @@ export async function POST(
       takerW,
     };
 
-    broadcastToGame(joinCode, createGameEvent("game-ended", winEventData));
+    await broadcastToGame(joinCode, createGameEvent("game-ended", winEventData));
 
     return NextResponse.json({
       success: true,
@@ -108,32 +107,39 @@ export async function POST(
     });
 
     if (newRound) {
-      const continueEventdata: GameStartedData = {
-        roundId: result.nextRoundId,
-        roundIndex: newRound.roundIndex,
-      };
-      broadcastToGame(
-        joinCode,
-        createGameEvent("game-started", continueEventdata),
-      );
-
-      // Also broadcast round-started with question data
+      // Only broadcast round-started - it contains all needed data
       const roundStartedData: RoundStartedData = {
         roundId: result.nextRoundId,
         roundIndex: newRound.roundIndex,
         questionPrompt: newRound.question.prompt,
         questionUnit: newRound.question.unit,
       };
-      broadcastToGame(
+      await broadcastToGame(
         joinCode,
         createGameEvent("round-started", roundStartedData),
       );
     }
   }
 
+  // Fetch the new round data for the response
+  const newRoundData = result.nextRoundId
+    ? await db.query.rounds.findFirst({
+        where: eq(rounds.id, result.nextRoundId),
+        with: { question: true },
+      })
+    : null;
+
   return NextResponse.json({
     success: true,
     gameEnded: false,
     nextRoundId: result.nextRoundId,
+    nextRound: newRoundData
+      ? {
+          id: newRoundData.id,
+          roundIndex: newRoundData.roundIndex,
+          questionPrompt: newRoundData.question.prompt,
+          questionUnit: newRoundData.question.unit,
+        }
+      : null,
   });
 }

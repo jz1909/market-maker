@@ -72,7 +72,7 @@ export async function POST(
     questionUnit: round.question.unit,
   };
 
-  broadcastToGame(joinCode, createGameEvent("round-started", eventData));
+  await broadcastToGame(joinCode, createGameEvent("round-started", eventData));
 
   return NextResponse.json({ success: true });
 }

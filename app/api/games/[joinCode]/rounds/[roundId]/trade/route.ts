@@ -105,7 +105,7 @@ export async function POST(
     side,
   };
 
-  broadcastToGame(joinCode, createGameEvent("trade-executed", tradeEventData));
+  await broadcastToGame(joinCode, createGameEvent("trade-executed", tradeEventData));
 
   // check if round ended, auto-settle if so
   const updatedRound = await db.query.rounds.findFirst({
@@ -124,7 +124,7 @@ export async function POST(
         takerPnL: settleResult.takerPnL,
       };
 
-      broadcastToGame(
+      await broadcastToGame(
         joinCode,
         createGameEvent("round-settled", roundSettledData),
       );

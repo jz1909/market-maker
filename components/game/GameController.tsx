@@ -146,14 +146,14 @@ export function GameController({
           },
         ]);
         setCurrentQuote(null);
-        setWaitingForTaker(false);
-        if (currentRound && currentRound.currentTurnIndex <= 2) {
+
+        if (currentRound && currentRound.currentTurnIndex < 2) {
+          setWaitingForTaker(false);
           setCurrentRound({
             ...currentRound,
             currentTurnIndex: currentRound.currentTurnIndex + 1,
           });
         }
-
         break;
       }
       case "round-ended": {
@@ -230,6 +230,31 @@ export function GameController({
 
     if (!res.ok) {
       console.error("Failed to continue game");
+      return;
+    }
+
+    const data = await res.json();
+
+    if (data.gameEnded) {
+      setGameStatus("FINISHED");
+      setWinnerId(data.winnerId);
+      setMakerWins(data.makerW);
+      setTakerWins(data.takerW);
+    } else if (data.nextRound) {
+      // Update maker's UI directly from response
+      setCurrentRound({
+        id: data.nextRound.id,
+        roundIndex: data.nextRound.roundIndex,
+        currentTurnIndex: 0,
+        status: "LIVE",
+        questionPrompt: data.nextRound.questionPrompt,
+        questionUnit: data.nextRound.questionUnit,
+        questionAnswer: 0,
+      });
+      setCurrentQuote(null);
+      setTrades([]);
+      setRoundResult(null);
+      setWaitingForTaker(false);
     }
   };
 

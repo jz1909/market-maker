@@ -73,7 +73,7 @@ export async function POST(
     takerPnL: result.takerPnL,
   };
 
-  broadcastToGame(joinCode, createGameEvent("round-settled", settleEventData));
+  await broadcastToGame(joinCode, createGameEvent("round-settled", settleEventData));
 
   return NextResponse.json({
     success: true,

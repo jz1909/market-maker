@@ -33,6 +33,7 @@ export function useGameChannel(
     });
 
     channel.on("broadcast", { event: "game-event" }, (payload) => {
+      console.log("Received broadcast event:", payload.payload);
       setLastEvent(payload.payload as GameEvent);
     });
 
