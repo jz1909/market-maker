@@ -55,7 +55,6 @@ export async function POST(
       with: { question: true, trades: true },
     });
 
-
     const roundResults = allRounds.map((round) => {
       const correctAnswer = Number(round.question.answer);
       const trades = round.trades.map((t) => ({

@@ -41,11 +41,11 @@ export function useGameChannel(
       const userIds = Object.keys(state);
 
       const newUsers = userIds.filter(
-        (id) => !previousUsersRef.current.includes(id)
+        (id) => !previousUsersRef.current.includes(id),
       );
 
       const goneUsers = previousUsersRef.current.filter(
-        (id) => !userIds.includes(id)
+        (id) => !userIds.includes(id),
       );
 
       for (const newUserId of newUsers) {

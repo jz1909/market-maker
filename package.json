@@ -11,6 +11,7 @@
   "dependencies": {
     "@clerk/nextjs": "^6.36.2",
     "@neondatabase/serverless": "^1.0.2",
+    "@radix-ui/react-separator": "^1.1.8",
     "@radix-ui/react-slot": "^1.2.4",
     "@supabase/supabase-js": "^2.90.1",
     "class-variance-authority": "^0.7.1",

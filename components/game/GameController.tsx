@@ -9,6 +9,8 @@ import { MakerPanel } from "./MakerPanel";
 import { TakerPanel } from "./TakerPanel";
 import { TradeHistory } from "./TradeRecord";
 import { useGameChannel } from "@/lib/supabase_realtime/useGameChannel";
+import { Navbar } from "../Navbar";
+
 
 interface GameControllerProps {
   joinCode: string;
@@ -51,7 +53,6 @@ export function GameController({
 }: GameControllerProps) {
   const isMaker = game.makerUserId === currentUserId;
   const currentRole = isMaker ? "MAKER" : "TAKER";
-  
 
   const [gameStatus, setGameStatus] = useState(game.status);
   const [winnerId, setWinnerId] = useState(game.winnerId);
@@ -80,9 +81,10 @@ export function GameController({
     displayName,
   );
 
-  const opponentId = isMaker ? game.takerUserId : game.makerUserId
-  const isOpponentOnline = opponentId? presentUsers.includes(opponentId): false
-
+  const opponentId = isMaker ? game.takerUserId : game.makerUserId;
+  const isOpponentOnline = opponentId
+    ? presentUsers.includes(opponentId)
+    : false;
 
   useEffect(() => {
     if (!lastEvent) return;
@@ -145,7 +147,7 @@ export function GameController({
         ]);
         setCurrentQuote(null);
         setWaitingForTaker(false);
-        if (currentRound && currentRound.currentTurnIndex<=2) {
+        if (currentRound && currentRound.currentTurnIndex <= 2) {
           setCurrentRound({
             ...currentRound,
             currentTurnIndex: currentRound.currentTurnIndex + 1,
@@ -192,10 +194,8 @@ export function GameController({
         break;
       }
 
-      
-
-      case "player-rejoined" : {
-        const data = lastEvent.data as {userId:string}
+      case "player-rejoined": {
+        const data = lastEvent.data as { userId: string };
         break;
       }
     }
@@ -274,6 +274,9 @@ export function GameController({
   if (gameStatus === "ACTIVE" && currentRound) {
     return (
       <div>
+
+        <Navbar/>
+
         <Scoreboard
           makerName={game.makerName}
           takerName={game.takerName ?? "Unknown"}
@@ -307,10 +310,13 @@ export function GameController({
           />
         )}
 
-        
-        {!isOpponentOnline && <div className="flex flex-col items-center">
-            <div className="text-red-500 text-sm">Opponent has left the game... Waiting for opponent to reconnect</div>
-        </div>}
+        {!isOpponentOnline && (
+          <div className="flex flex-col items-center">
+            <div className="text-red-500 text-sm">
+              Opponent has left the game... Waiting for opponent to reconnect
+            </div>
+          </div>
+        )}
 
         <TradeHistory trades={trades} />
       </div>

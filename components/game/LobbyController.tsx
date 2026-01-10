@@ -6,6 +6,7 @@ import { StartGameButton } from "@/components/StartGameButton";
 import Link from "next/link";
 import { useGameChannel } from "@/lib/supabase_realtime/useGameChannel";
 import { currentUser } from "@clerk/nextjs/server";
+import { ReturnHomeButton } from "../ReturnHomeButton";
 
 interface LobbyControllerProps {
   joinCode: string;
@@ -31,9 +32,9 @@ export function LobbyController({
 
   const [takerName, setTakerName] = useState(game.takerName);
   const [takerId, setTakerId] = useState(game.takerUserId);
-  const [makerName, setMakerName] = useState(game.makerName)
-  const [makerId, setMakerId] = useState(game.makerUserId)
-  const [makerLeft, setMakerLeft] = useState(false)
+  const [makerName, setMakerName] = useState(game.makerName);
+  const [makerId, setMakerId] = useState(game.makerUserId);
+  const [makerLeft, setMakerLeft] = useState(false);
 
   const bothPlayersPresent = game.makerUserId && takerId;
 
@@ -64,16 +65,13 @@ export function LobbyController({
         if (data.userId === takerId) {
           setTakerName(null);
           setTakerId(null);
-        }
-
-        else if (data.userId === makerId){
-          setMakerName(null)
-          setMakerId(null)
-          setMakerLeft(true)
+        } else if (data.userId === makerId) {
+          setMakerName(null);
+          setMakerId(null);
+          setMakerLeft(true);
         }
         break;
       }
-
 
       case "player-rejoined": {
         const data = lastEvent.data as {
@@ -84,12 +82,10 @@ export function LobbyController({
         if (data.role === "taker" && data.userId !== currentUserId) {
           setTakerId(data.userId);
           setTakerName(data.displayName);
-        }
-
-        else if (data.role === "maker" && data.userId !== currentUserId){
-          setMakerId(data.userId)
-          setMakerName(data.displayName)
-          setMakerLeft(false)
+        } else if (data.role === "maker" && data.userId !== currentUserId) {
+          setMakerId(data.userId);
+          setMakerName(data.displayName);
+          setMakerLeft(false);
         }
         break;
       }
@@ -103,15 +99,7 @@ export function LobbyController({
 
   return (
     <div className="min-h-screen p-8">
-      <header className="mb-8">
-        <Link
-          href="/"
-          className="text-white hover:underline bg-blue-500 rounded-2xl      
-  p-3"
-        >
-          Back to home
-        </Link>
-      </header>
+      <ReturnHomeButton />
       <main className="w-fill flex flex-col items-center justify-center">
         <h1 className="text-3xl font-bold mb-8">Game Lobby</h1>
 
@@ -153,7 +141,7 @@ export function LobbyController({
         <div>
           <StartGameButton
             disabled={!bothPlayersPresent || isTaker}
-            className={`!text-white hover:bg-gray-800 p-7 text-white ${bothPlayersPresent? "" : "bg-none bg-gray-100 border-gray text-gray-400 hover:bg-gray-100"}`}
+            className={`!text-white hover:bg-gray-800 p-7 text-white ${bothPlayersPresent ? "" : "bg-none bg-gray-100 border-gray text-gray-400 hover:bg-gray-100"}`}
             joinCode={joinCode}
           />
         </div>
@@ -170,7 +158,9 @@ export function LobbyController({
           </div>
         )}
 
-        {isTaker && makerLeft && (<div className="text-sm text-red-500">Maker has left the game...</div>)}
+        {isTaker && makerLeft && (
+          <div className="text-sm text-red-500">Maker has left the game...</div>
+        )}
 
         {!isConnected && (
           <p className="text-yellow-600 text-sm mt-4">

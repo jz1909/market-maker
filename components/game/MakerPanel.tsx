@@ -109,7 +109,7 @@ export function MakerPanel({
       <Button
         onClick={handleSubmit}
         disabled={!isMyTurn || loading}
-        className={`font-bold text-xl bg-none bg-blue-600 hover:bg-blue-500 mt-10 w-[15vw] ${loading ? "cursor-wait":""}`}
+        className={`font-bold text-xl bg-none bg-blue-600 hover:bg-blue-500 mt-10 w-[15vw] ${loading ? "cursor-wait" : ""}`}
       >
         {loading
           ? "Submitting"

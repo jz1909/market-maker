@@ -88,7 +88,7 @@ export function TakerPanel({
         <Button
           onClick={() => handleTrade("SELL")}
           disabled={!isMyTurn || loading}
-          className={`bg-none bg-red-600 hover:bg-red-500 text-xl font-bold ${loading ? "cursor-wait":""}`}
+          className={`bg-none bg-red-600 hover:bg-red-500 text-xl font-bold ${loading ? "cursor-wait" : ""}`}
         >
           SELL @ ${currentQuote.bid}
         </Button>
@@ -106,7 +106,7 @@ export function TakerPanel({
         <Button
           onClick={() => handleTrade(null)}
           disabled={!isMyTurn || loading}
-          className={`bg-none bg-gray-600 hover:bg-gray-500 text-xl font-bold ${loading ? "cursor-wait":""}`}
+          className={`bg-none bg-gray-600 hover:bg-gray-500 text-xl font-bold ${loading ? "cursor-wait" : ""}`}
         >
           Pass
         </Button>

@@ -7,6 +7,8 @@ import { Button } from "@/components/ui/button";
 import { CreateGameButton } from "@/components/CreateGameButton";
 import { JoinGameForm } from "@/components/JoinGameForm";
 import Link from "next/link";
+import { NavbarHome } from "@/components/NavbarHome";
+import { Separator } from "@/components/ui/separator";
 
 type DbUser = typeof users.$inferSelect;
 type GameWithRelations = typeof games.$inferSelect & {
@@ -36,27 +38,14 @@ export default async function Home() {
   }
 
   return (
-    <div className="min-h-screen p-8">
-      <header className="flex justify-between items-center mb-8">
-        <Link href="/">
-          <h1 className="text-2xl font-bold">Market Maker</h1>
-        </Link>
-        <SignedIn>
-          <UserButton />
-        </SignedIn>
-        <SignedOut>
-          <SignInButton>
-            <Button className="bg-blue-500 font-bold">Sign In</Button>
-          </SignInButton>
-        </SignedOut>
-      </header>
-
+    <div className="min-h-screen ">
       <main>
         <SignedOut>
-          <div className="w-full min-h-screen flex justify-center items-center -mt-[4vh]">
-            <div className="h-[40vh] aspect-square rounded-xl border-15 border-gray-500 bg-gray-100 flex flex-col justify-between p-6">
+          <div className=" min-h-screen flex justify-center items-center bg-gray-500">
+            <div className="w-[40vw] aspect-square rounded-xl border-15 border-gray-200 shadow-2xl  bg-gray-100 flex flex-col justify-between p-6">
               <div>
                 <h1 className="text-4xl font-bold">Welcome to Market-Maker</h1>
+                <Separator className="my-4 bg-gray-400"/>
               </div>
               <div className="text-3xl">
                 Market-Maker is a hybrid game that combines the elements of quiz
@@ -76,13 +65,15 @@ export default async function Home() {
           </div>
         </SignedOut>
         <SignedIn>
-          <div className="flex flex-col gap-4 mb-8 p-10">
-            <div className="flex flex-col justify-between items-center gap-20 bg-gray-100 p-25 rounded-lg">
+          <NavbarHome />
+
+          <div className="flex flex-col items-center gap-4 mb-1 p-10  ">
+            <div className="flex flex-col bg-gray-100 outline-8 outline-blue-300 shadow-2xl shadow-blue-200 justify-center w-[50vw] h-[50vh] -translate-y-25 items-center gap-20  p-25 rounded-lg">
               <div className="flex items-center justify-center w-full">
                 <CreateGameButton />
               </div>
 
-              <div className="text-4xl font-extrabold">or</div>
+              <div className="text-4xl font-extrabold text-blue-400">or</div>
 
               <div className="">
                 <JoinGameForm />
@@ -91,7 +82,7 @@ export default async function Home() {
           </div>
 
           <section className="mb-200">
-            <h2 className="text-4xl font-semibold mb-10">Your games</h2>
+            <h2 className="text-4xl font-semibold mb-10 w-full text-center">Previous games</h2>
             {userGames.length === 0 ? (
               <p className="text-xl text-gray-500">
                 No games yet. Create or join one to start!
